@@ -1,0 +1,6 @@
+{
+  "name": "Trung Tâm Điều Hành CNTT - BVĐK MNNB Quảng Nam",
+  "description": "Trung tâm điều hành và giám sát hạ tầng CNTT, sự cố HIS/PACS/LIS và thiết bị y tế cho Bệnh Viện Đa Khoa Khu Vực Miền Núi Phía Bắc Quảng Nam.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,384 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Be Vietnam Pro", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-sans: "Be Vietnam Pro", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* Brand Accents — Dark Theme (Cyber Ops) */
+  --color-acid-lime: #CCFF00;
+  --color-acid-lime-dim: #b8e600;
+  --color-neon-red: #FF3366;
+  --color-line-energy: #88AAFF;
+  --color-neon-cyan: #00F0FF;
+  --color-alert-amber: #FF9900;
+
+  /* Surfaces — Dark Theme */
+  --color-space-bg: #030014;
+  --color-card-bg: #333333;
+  --color-surface: #121526;
+  --color-panel: #0F1222;
+  --color-panel-deep: #070913;
+
+  /* Brand Accents — Light Theme (9Router Warm Grid) */
+  --color-terracotta: #E05D38;
+  --color-canvas-light: #FAF8F6;
+}
+
+@layer utilities {
+  .text-stroke-white {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.9);
+  }
+  .text-stroke-white-thin {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
+  }
+  .text-stroke-lime {
+    -webkit-text-stroke: 1px #CCFF00;
+  }
+  .text-stroke-transparent {
+    color: transparent;
+  }
+}
+
+::selection {
+  background-color: #CCFF00;
+  color: #000000;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #030014;
+}
+::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #CCFF00;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-marquee-paused {
+  animation-play-state: paused !important;
+}
+
+.animate-marquee-fast {
+  animation-duration: 12s !important;
+}
+
+.animate-marquee-normal {
+  animation-duration: 25s !important;
+}
+
+.animate-marquee-slow {
+  animation-duration: 45s !important;
+}
+
+/* Custom styling for ReactFlow Controls to match dark cyber aesthetic */
+.react-flow__controls {
+  background-color: #121526 !important;
+  border: 1px solid rgba(204, 255, 0, 0.4) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(204, 255, 0, 0.2) !important;
+  overflow: hidden !important;
+}
+
+.react-flow__controls-button {
+  background-color: #181c32 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #CCFF00 !important;
+  fill: #CCFF00 !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: #CCFF00 !important;
+  color: #000000 !important;
+  fill: #000000 !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.react-flow__attribution {
+  background: rgba(15, 18, 34, 0.8) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  font-size: 10px !important;
+}
+
+.react-flow__attribution a {
+  color: #88AAFF !important;
+}
+
+/* ==========================================================================
+   9ROUTER LIGHT GRID THEME OVERRIDES (.theme-light)
+   Reference: Clean, warm off-white canvas (#FAF8F6) with subtle grid lines,
+   terracotta coral accents (#E05D38 / #E85C3A), dark typography, and crisp white cards.
+   ========================================================================== */
+
+.theme-light {
+  background-color: #FAF8F6 !important;
+  color: #0F172A !important;
+  background-image: 
+    linear-gradient(to right, rgba(180, 175, 165, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(180, 175, 165, 0.22) 1px, transparent 1px) !important;
+  background-size: 28px 28px !important;
+}
+
+.theme-light ::selection {
+  background-color: #E05D38 !important;
+  color: #FFFFFF !important;
+}
+
+/* Light Theme Scrollbars */
+.theme-light ::-webkit-scrollbar-track {
+  background: #F1F5F9 !important;
+}
+.theme-light ::-webkit-scrollbar-thumb {
+  background: #CBD5E1 !important;
+}
+.theme-light ::-webkit-scrollbar-thumb:hover {
+  background: #E05D38 !important;
+}
+
+/* Canvas & Background Animations Tint in Light Mode */
+.theme-light canvas {
+  opacity: 0.08 !important;
+  filter: contrast(0.5) brightness(1.8) !important;
+}
+
+/* Header Overlay */
+.theme-light header {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Comprehensive Container & Card Overrides using Attribute Selectors */
+.theme-light [class*="bg-[#0"],
+.theme-light [class*="bg-[#1"],
+.theme-light [class*="bg-[#2"],
+.theme-light [class*="bg-[#3"],
+.theme-light [class*="bg-black"],
+.theme-light [class*="bg-slate-9"],
+.theme-light [class*="bg-slate-8"],
+.theme-light [class*="bg-zinc-8"],
+.theme-light [class*="bg-zinc-9"],
+.theme-light [class*="bg-neutral-8"],
+.theme-light [class*="bg-neutral-9"] {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Token-based container & card overrides for Light Mode */
+.theme-light [class*="bg-surface"],
+.theme-light [class*="bg-panel"],
+.theme-light [class*="bg-panel-deep"],
+.theme-light [class*="bg-space-bg"],
+.theme-light [class*="bg-card-bg"] {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Inner Panels / Stats Highlights inside Cards in Light Mode */
+.theme-light [class*="bg-white/5"],
+.theme-light [class*="bg-white/10"],
+.theme-light [class*="bg-white/15"],
+.theme-light [class*="bg-white/20"] {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+/* Text Overrides for Light Theme */
+.theme-light [class*="text-white"] {
+  color: #0F172A !important;
+}
+.theme-light [class*="text-white/90"],
+.theme-light [class*="text-white/80"] {
+  color: #1E293B !important;
+}
+.theme-light [class*="text-white/70"],
+.theme-light [class*="text-white/60"] {
+  color: #334155 !important;
+}
+.theme-light [class*="text-white/50"],
+.theme-light [class*="text-white/40"],
+.theme-light [class*="text-white/30"] {
+  color: #64748B !important;
+}
+
+.theme-light .text-stroke-white {
+  -webkit-text-stroke: 0px transparent !important;
+  color: #0F172A !important;
+}
+
+/* Border Overrides for Light Mode */
+.theme-light [class*="border-white"] {
+  border-color: #E2E8F0 !important;
+}
+
+/* 9Router Terracotta Accent Overrides (#E05D38 / #E85C3A) */
+.theme-light [class*="text-acid-lime"] {
+  color: #E05D38 !important;
+  text-shadow: none !important;
+}
+
+.theme-light [class*="bg-acid-lime"] {
+  background-color: #E05D38 !important;
+  color: #FFFFFF !important;
+  border-color: #E05D38 !important;
+  box-shadow: 0 4px 14px rgba(224, 93, 56, 0.25) !important;
+}
+
+.theme-light [class*="bg-acid-lime"]:hover {
+  background-color: #C84C2B !important;
+}
+
+.theme-light [class*="border-acid-lime"] {
+  border-color: rgba(224, 93, 56, 0.4) !important;
+}
+
+.theme-light [class*="bg-acid-lime/10"],
+.theme-light [class*="bg-acid-lime/15"],
+.theme-light [class*="bg-acid-lime/20"] {
+  background-color: rgba(224, 93, 56, 0.08) !important;
+  color: #E05D38 !important;
+  border-color: rgba(224, 93, 56, 0.25) !important;
+}
+
+/* Secondary Accent Color Overrides for Light Mode */
+.theme-light [class*="text-line-energy"] {
+  color: #2563EB !important;
+}
+.theme-light [class*="border-line-energy"] {
+  border-color: rgba(37, 99, 235, 0.3) !important;
+}
+.theme-light [class*="bg-line-energy/10"],
+.theme-light [class*="bg-line-energy/20"] {
+  background-color: rgba(37, 99, 235, 0.08) !important;
+  color: #2563EB !important;
+}
+
+.theme-light [class*="text-neon-cyan"] {
+  color: #0284C7 !important;
+}
+.theme-light [class*="border-neon-cyan"] {
+  border-color: rgba(2, 132, 199, 0.3) !important;
+}
+.theme-light [class*="bg-neon-cyan/10"],
+.theme-light [class*="bg-neon-cyan/15"],
+.theme-light [class*="bg-neon-cyan/20"] {
+  background-color: rgba(2, 132, 199, 0.08) !important;
+  color: #0284C7 !important;
+}
+
+/* Critical Status Badges and Highlights */
+.theme-light [class*="text-neon-red"] {
+  color: #DC2626 !important;
+}
+.theme-light [class*="bg-neon-red"] {
+  background-color: #DC2626 !important;
+  color: #FFFFFF !important;
+}
+.theme-light [class*="bg-neon-red/10"],
+.theme-light [class*="bg-neon-red/15"] {
+  background-color: #FFF5F3 !important;
+  border-color: rgba(220, 38, 38, 0.3) !important;
+  color: #DC2626 !important;
+}
+
+/* Status Badge Overrides for Light Mode */
+.theme-light [class*="bg-card-bg/80"],
+.theme-light [class*="bg-card-bg/60"] {
+  background-color: #FDF0EB !important;
+  border-color: rgba(224, 93, 56, 0.3) !important;
+  color: #E05D38 !important;
+}
+
+/* Inputs, Selects, and Textareas */
+.theme-light input,
+.theme-light select,
+.theme-light textarea {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+.theme-light option {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+.theme-light input::placeholder,
+.theme-light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Table styling for Light Mode */
+.theme-light th {
+  background-color: #F8FAFC !important;
+  color: #475569 !important;
+  border-color: #E2E8F0 !important;
+}
+
+.theme-light tr {
+  border-color: #F1F5F9 !important;
+}
+
+.theme-light tr:hover {
+  background-color: #F8FAFC !important;
+}
+
+/* ReactFlow controls in Light Mode */
+.theme-light .react-flow__controls {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+}
+.theme-light .react-flow__controls-button {
+  background-color: #F8FAFC !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  color: #E05D38 !important;
+  fill: #E05D38 !important;
+}
+.theme-light .react-flow__controls-button:hover {
+  background-color: #E05D38 !important;
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}
