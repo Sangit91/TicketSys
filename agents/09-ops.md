@@ -4,10 +4,13 @@
 
 ## 1. Git
 
-- Hiện tại repo chưa có lịch sử commit đáng kể (đang khởi tạo). Quy ước:
+- Remote: `origin` → `https://github.com/Sangit91/TicketSys.git` (branch chính `main`).
+- Đã push lần đầu (initial commit) — kiểm tra trạng thái: `git status` / `git log --oneline -5`.
+- Quy ước:
   - Commit ngắn gọn, đúng trọng tâm, tiếng Việt hoặc English đều được (đồng nhất theo dự án).
   - **KHÔNG commit**: `openbrain/`, `openbrain/.env`, `.env`, `certs/`, `dist/`, `node_modules/`.
   - Trước commit luôn chạy `npm run lint && npm run build`.
+  - Push lên `origin/main`, dùng Git Credential Manager (đã cấu hình) để xử lý auth HTTPS.
 
 ## 2. Backup
 

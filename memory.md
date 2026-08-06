@@ -7,7 +7,7 @@
 - **Tên:** Trung Tâm Điều Hành CNTT — BVĐK MNNB Quảng Nam
 - **Loại:** Web app quản lý vận hành CNTT y tế (SPA frontend)
 - **Module:** Yêu cầu xử lý (tickets) · Thiết bị & Tài sản · Sơ đồ hạ tầng · Khoa phòng · Quản trị roles · Audit logs + ký số E2E
-- **Repo:** `TicketSys-main` (local D:\Coding\TicketSys-main) — chưa có remote
+- **Repo:** `TicketSys-main` (local D:\Coding\TicketSys-main) — remote `origin` = https://github.com/Sangit91/TicketSys.git (branch `main`)
 
 ## 🎯 Tầm nhìn kiến trúc
 
@@ -28,8 +28,8 @@ src/
 
 ## 🚧 Backup gần nhất
 
-- Chưa có backup chính thức (đang khởi tạo dự án chuẩn agent).
-- Khuyến nghị: trước khi thay đổi lớn, làm git checkpoint.
+- **Git checkpoint:** initial commit `6af2125` đã push `origin/main` (2026-08-06).
+- Backup token ruổi: `Temp\opencode\ticketsys-backup-before-tokens`.
 
 ## ⚠️ Quy tắc môi trường BẮT BUỘC NHỚ
 
