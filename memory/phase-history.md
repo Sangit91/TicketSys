@@ -31,6 +31,10 @@
 - CSS `@media (prefers-reduced-motion: reduce)` vô hiệu animation/transition toàn cục.
 - Responsive: bảng Tickets cuộn ngang (`overflow-x-auto` + `min-w-[720px]`); Header có sẵn desktop `hidden xl:flex` + sub-nav mobile `xl:hidden overflow-x-auto`.
 
+### Fix bug: deprecation THREE.Clock + mất session khi login
+- Thay `THREE.Clock` → `THREE.Timer` trong `ParticleBackground.tsx` (hết cảnh báo deprecation).
+- **Persist session login**: `isLoggedIn` + `currentUser` lưu `localStorage` (`app-logged-in`, `app-user`) — khôi phục khi App remount/reload → hết tình trạng "đăng nhập 1 lúc lại log out".
+
 ## PHASE 2 — Hoàn thiện UI nền tảng ([2026-08-06])
 
 ### Sửa bug + type-safety (6 bug P0)

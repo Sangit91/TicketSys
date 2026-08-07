@@ -156,12 +156,13 @@ export const ParticleBackground: React.FC = () => {
 
     // Animation Loop
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    const timer = new THREE.Timer();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      const elapsedTime = clock.getElapsedTime();
+      timer.update();
+      const elapsedTime = timer.getElapsed();
 
       // Rotate particle group subtly
       particleSystem.rotation.y = elapsedTime * 0.015;

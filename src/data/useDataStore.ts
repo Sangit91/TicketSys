@@ -30,7 +30,19 @@ export function useDataStore() {
   const [departments, setDepartments] = useState<DepartmentSummary[]>(DEPARTMENTS_DATA);
   const [staffList, setStaffList] = useState<TechnicalStaffProfile[]>(TECHNICAL_STAFF_USERS);
   const [auditLogs, setAuditLogs] = useState<SystemAuditLog[]>(INITIAL_AUDIT_LOGS);
-  const [currentUser, setCurrentUser] = useState<TechnicalStaffProfile>(TECHNICAL_STAFF_USERS[0]);
+
+  // Session khôi phục: nếu có id user lưu trước đó (localStorage), giữ nguyên người dùng
+  const storedUserId = typeof window !== 'undefined' ? window.localStorage.getItem('app-user') : null;
+  const [currentUser, setCurrentUserState] = useState<TechnicalStaffProfile>(
+    () =>
+      (storedUserId && TECHNICAL_STAFF_USERS.find((s) => s.id === storedUserId)) ||
+      TECHNICAL_STAFF_USERS[0]
+  );
+
+  const setCurrentUser = (user: TechnicalStaffProfile) => {
+    setCurrentUserState(user);
+    if (typeof window !== 'undefined') window.localStorage.setItem('app-user', user.id);
+  };
 
   const addAuditLog = (logData: Omit<SystemAuditLog, 'id' | 'timestamp'>) => {
     const newLog: SystemAuditLog = {
@@ -205,7 +217,7 @@ export function useDataStore() {
       prev.map((s) => (s.id === staffId ? { ...s, assignedDepartmentIds: departmentIds } : s))
     );
     if (currentUser.id === staffId) {
-      setCurrentUser((prev) => ({ ...prev, assignedDepartmentIds: departmentIds }));
+      setCurrentUserState((prev) => ({ ...prev, assignedDepartmentIds: departmentIds }));
     }
     addAuditLog({
       level: 'SECURITY',
