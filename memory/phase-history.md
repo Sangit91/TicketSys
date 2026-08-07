@@ -21,6 +21,11 @@
 - Tạo `src/hooks/usePagedRows.ts` (phân trang + auto reset trang 1 khi filter đổi) + `src/components/Pagination.tsx` (prev/next, window page, summary "X–Y / tổng").
 - Áp vào Tickets (8/trang), Inventory (9), AuditLogs (10). Thay `.map()` toàn bộ bằng slice theo trang.
 
+### Data-access layer
+- Tạo `src/data/useDataStore.ts`: gom toàn bộ state (tickets, inventory, departments, staffList, auditLogs, currentUser) + CRUD (`addTicket`, `applyTicketStatus`, `verifyE2E`, `add/update department/inventory/staff`) + `addAuditLog`.
+- App.tsx mỏng lại: chỉ giữ auth session (login/switch user, RBAC tab), selectedTicket derive từ store (bỏ snapshot stale), notification/toast. Các view nhận state qua props từ store.
+- Khi nối backend: chỉ sửa bên trong `useDataStore` (fetch API), API trả về giữ nguyên — App & views không đổi.
+
 ## PHASE 2 — Hoàn thiện UI nền tảng ([2026-08-06])
 
 ### Sửa bug + type-safety (6 bug P0)

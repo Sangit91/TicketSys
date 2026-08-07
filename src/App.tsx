@@ -42,34 +42,25 @@ const AssetFlowMap = lazy(() => import('./components/AssetFlowMap').then((m) => 
 const DepartmentsView = lazy(() => import('./components/DepartmentsView').then((m) => ({ default: m.DepartmentsView })));
 const AdminRoleView = lazy(() => import('./components/AdminRoleView').then((m) => ({ default: m.AdminRoleView })));
 const AuditLogsView = lazy(() => import('./components/AuditLogsView').then((m) => ({ default: m.AuditLogsView })));
-import {
-  INITIAL_TICKETS,
-  INITIAL_INVENTORY,
-  DEPARTMENTS_DATA,
-  TECHNICAL_STAFF_USERS,
-  INITIAL_AUDIT_LOGS,
-} from './data/mockData';
+
+import { useDataStore } from './data/useDataStore';
 import {
   Ticket,
   TicketStatus,
   TechnicalStaffProfile,
-  SystemAuditLog,
   TabType,
   ROLE_PERMISSIONS,
   InventoryItem,
   DepartmentSummary,
 } from './types';
-import { generateId, fakeSha256 } from './utils';
 
 export default function App() {
+  const store = useDataStore();
+  const { tickets, inventory, departments, staffList, auditLogs, currentUser, setCurrentUser } = store;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('TỔNG QUAN');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [tickets, setTickets] = useState<Ticket[]>(INITIAL_TICKETS);
-  const [inventory, setInventory] = useState(INITIAL_INVENTORY);
-  const [departments, setDepartments] = useState(DEPARTMENTS_DATA);
-  const [auditLogs, setAuditLogs] = useState<SystemAuditLog[]>(INITIAL_AUDIT_LOGS);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const notificationTimerRef = useRef<number | null>(null);
 
@@ -92,10 +83,6 @@ export default function App() {
     localStorage.setItem('app-theme', nextTheme);
   };
 
-  // RBAC State
-  const [staffList, setStaffList] = useState<TechnicalStaffProfile[]>(TECHNICAL_STAFF_USERS);
-  const [currentUser, setCurrentUser] = useState<TechnicalStaffProfile>(TECHNICAL_STAFF_USERS[0]); // Default ADMIN
-
   const showNotification = (msg: string) => {
     setNotification(msg);
     if (notificationTimerRef.current) {
@@ -107,44 +94,10 @@ export default function App() {
     }, 5000);
   };
 
-  const addAuditLog = (logData: Omit<SystemAuditLog, 'id' | 'timestamp'>) => {
-    const newLog: SystemAuditLog = {
-      ...logData,
-      id: generateId('LOG', 2026),
-      timestamp: new Date().toISOString(),
-    };
-    setAuditLogs((prev) => [newLog, ...prev]);
-  };
-
-  const handleAddDepartment = (newDept: DepartmentSummary) => {
-    setDepartments((prev) => [...prev, newDept]);
-    showNotification(`ĐÃ THÊM KHOA PHÒNG MỚI: ${newDept.name} (${newDept.code})`);
-    addAuditLog({
-      level: 'INFO',
-      category: 'DEPARTMENTS',
-      action: 'ADD_DEPARTMENT',
-      details: `Khởi tạo thông tin Khoa / Phòng mới: ${newDept.name} (${newDept.code}). Leader: ${newDept.lead}`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
-      targetId: newDept.id,
-      sha256Hash: fakeSha256(),
-    });
-  };
-
-  const handleUpdateDepartment = (updatedDept: DepartmentSummary) => {
-    setDepartments((prev) => prev.map((d) => (d.id === updatedDept.id ? updatedDept : d)));
-    showNotification(`ĐÃ CẬP NHẬT THÔNG TIN KHOA PHÒNG: ${updatedDept.name}`);
-    addAuditLog({
-      level: 'INFO',
-      category: 'DEPARTMENTS',
-      action: 'UPDATE_DEPARTMENT',
-      details: `Cập nhật cấu hình Khoa / Phòng: ${updatedDept.name}. Băng thông: ${updatedDept.networkBandwidthGbps} Gbps.`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
-      targetId: updatedDept.id,
-      sha256Hash: fakeSha256(),
-    });
-  };
+  // selectedTicket derive từ store (1 nguồn sự thật — hết stale state)
+  const selectedTicket: Ticket | null = selectedTicketId
+    ? store.tickets.find((t) => t.id === selectedTicketId) ?? null
+    : null;
 
   const handleLoginSuccess = (user: TechnicalStaffProfile) => {
     setCurrentUser(user);
@@ -156,7 +109,7 @@ export default function App() {
     }
 
     showNotification(`ĐÃ ĐĂNG NHẬP THÀNH CÔNG: ${user.name.toUpperCase()} (${perm.shortRole})`);
-    addAuditLog({
+    store.addAuditLog({
       level: 'SECURITY',
       category: 'RBAC',
       action: 'USER_LOGIN',
@@ -164,249 +117,85 @@ export default function App() {
       actorName: user.name,
       actorRole: user.role,
       targetId: user.id,
-      sha256Hash: fakeSha256(),
     });
   };
 
   const handleSwitchUser = (staffId: string) => {
     const targetStaff = staffList.find((s) => s.id === staffId);
-    if (targetStaff) {
-      setCurrentUser(targetStaff);
-      const perm = ROLE_PERMISSIONS[targetStaff.roleType] || ROLE_PERMISSIONS['ADMIN'];
-      if (!perm.allowedTabs.includes(activeTab)) {
-        setActiveTab(perm.allowedTabs[0]);
-      }
+    if (!targetStaff) return;
 
-      showNotification(`CHUYỂN PHIÊN PHÂN QUYỀN: ${targetStaff.name.toUpperCase()} (${perm.shortRole})`);
-      addAuditLog({
-        level: 'SECURITY',
-        category: 'RBAC',
-        action: 'SWITCH_USER_SESSION',
-        details: `Chuyển đổi tài khoản làm việc sang: ${targetStaff.name} (${perm.label}).`,
-        actorName: targetStaff.name,
-        actorRole: targetStaff.role,
-        targetId: targetStaff.id,
-        sha256Hash: fakeSha256(),
-      });
+    setCurrentUser(targetStaff);
+    const perm = ROLE_PERMISSIONS[targetStaff.roleType] || ROLE_PERMISSIONS['ADMIN'];
+    if (!perm.allowedTabs.includes(activeTab)) {
+      setActiveTab(perm.allowedTabs[0]);
     }
+
+    showNotification(`CHUYỂN PHIÊN PHÂN QUYỀN: ${targetStaff.name.toUpperCase()} (${perm.shortRole})`);
+    store.addAuditLog({
+      level: 'SECURITY',
+      category: 'RBAC',
+      action: 'SWITCH_USER_SESSION',
+      details: `Chuyển đổi tài khoản làm việc sang: ${targetStaff.name} (${perm.label}).`,
+      actorName: targetStaff.name,
+      actorRole: targetStaff.role,
+      targetId: targetStaff.id,
+    });
   };
 
   const handleUpdateStaffDepartments = (staffId: string, departmentIds: string[]) => {
-    setStaffList((prev) =>
-      prev.map((s) => (s.id === staffId ? { ...s, assignedDepartmentIds: departmentIds } : s))
-    );
-    if (currentUser.id === staffId) {
-      setCurrentUser((prev) => ({ ...prev, assignedDepartmentIds: departmentIds }));
-    }
+    store.updateStaffDepartments(staffId, departmentIds);
     showNotification(`ĐÃ CẬP NHẬT GÁN PHÂN CÔNG KHOA PHÒNG PHỤ TRÁCH CHO KĨ THUẬT VIÊN`);
-    addAuditLog({
-      level: 'SECURITY',
-      category: 'RBAC',
-      action: 'UPDATE_STAFF_DEPARTMENTS',
-      details: `Thay đổi danh sách khoa phòng được giao phụ trách cho kĩ thuật viên ID [${staffId}].`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
-      targetId: staffId,
-      sha256Hash: fakeSha256(),
-    });
   };
 
   const handleAddStaffProfile = (newStaff: TechnicalStaffProfile) => {
-    setStaffList((prev) => [...prev, newStaff]);
+    store.addStaffProfile(newStaff);
     showNotification(`ĐÃ KHỞI TẠO TÀI KHOẢN KĨ THUẬT VIÊN MỚI: ${newStaff.name}`);
-    addAuditLog({
-      level: 'SECURITY',
-      category: 'RBAC',
-      action: 'ADD_STAFF_PROFILE',
-      details: `Khởi tạo hồ sơ nhân sự kĩ thuật viên mới: ${newStaff.name} - Chuyên môn: ${newStaff.specialty}`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
-      targetId: newStaff.id,
-      sha256Hash: fakeSha256(),
-    });
+  };
+
+  const handleAddDepartment = (newDept: DepartmentSummary) => {
+    store.addDepartment(newDept);
+    showNotification(`ĐÃ THÊM KHOA PHÒNG MỚI: ${newDept.name} (${newDept.code})`);
+  };
+
+  const handleUpdateDepartment = (updatedDept: DepartmentSummary) => {
+    store.updateDepartment(updatedDept);
+    showNotification(`ĐÃ CẬP NHẬT THÔNG TIN KHOA PHÒNG: ${updatedDept.name}`);
   };
 
   const handleAddInventoryItem = (newItem: InventoryItem) => {
-    setInventory((prev) => [newItem, ...prev]);
+    store.addInventoryItem(newItem);
     showNotification(`ĐÃ THÊM THIẾT BỊ / MỰC IN MỚI: ${newItem.name}`);
-    addAuditLog({
-      level: 'SUCCESS',
-      category: 'INVENTORY',
-      action: 'ADD_INVENTORY_ASSET',
-      details: `Nhập kho thiết bị / mực in y tế mới: ${newItem.name} [Mã QR: ${newItem.qrCodeUrl}]`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
-      targetId: newItem.id,
-      sha256Hash: fakeSha256(),
-    });
   };
 
   const handleUpdateInventoryItem = (updatedItem: InventoryItem) => {
-    setInventory((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+    store.updateInventoryItem(updatedItem);
     showNotification(`ĐÃ CẬP NHẬT NHẬT KÝ VẬN HÀNH THIẾT BỊ [${updatedItem.id}]`);
-    addAuditLog({
-      level: 'INFO',
-      category: 'INVENTORY',
-      action: 'UPDATE_ASSET_LOG',
-      details: `Cập nhật hồ sơ vận hành thiết bị ${updatedItem.name} (${updatedItem.id}). Vị trí: ${updatedItem.location}`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
-      targetId: updatedItem.id,
-      sha256Hash: fakeSha256(),
-    });
   };
 
-  // Handle New Ticket Submission
-  const handleCreateTicket = (
-    newTicketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>
-  ) => {
-    const id = generateId('INC', 2026);
-    const now = new Date().toISOString();
-
-    const created: Ticket = {
-      ...newTicketData,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setTickets((prev) => [created, ...prev]);
+  const handleCreateTicket = (data: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const id = store.addTicket(data);
     showNotification(`TICKET [${id}] CREATED SUCCESSFULLY AND DISPATCHED TO NCO`);
-    addAuditLog({
-      level: 'INFO',
-      category: 'TICKETS',
-      action: 'CREATE_TICKET',
-      details: `Tạo yêu cầu hỗ trợ sự cố mới [${id}]: ${created.title}. Đơn vị: ${created.departmentName}`,
-      actorName: created.requestorName,
-      actorRole: created.requestorRole || 'Cán Bộ Y Tế',
-      targetId: id,
-      sha256Hash: fakeSha256(),
-    });
   };
 
-  // Handle Updating Status
   const handleUpdateTicketStatus = (
     ticketId: string,
     newStatus: TicketStatus,
     notes?: string,
     engineer?: string
   ) => {
-    setTickets((prev) =>
-      prev.map((t) => {
-        if (t.id === ticketId) {
-          return {
-            ...t,
-            status: newStatus,
-            resolutionNotes: notes || t.resolutionNotes,
-            assignedEngineer: engineer || t.assignedEngineer,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        return t;
-      })
-    );
-
-    if (selectedTicket && selectedTicket.id === ticketId) {
-      setSelectedTicket((prev) =>
-        prev
-          ? {
-              ...prev,
-              status: newStatus,
-              resolutionNotes: notes || prev.resolutionNotes,
-              assignedEngineer: engineer || prev.assignedEngineer,
-              updatedAt: new Date().toISOString(),
-            }
-          : null
-      );
-    }
-
+    store.applyTicketStatus(ticketId, newStatus, notes, engineer);
     showNotification(`TICKET [${ticketId}] UPDATED TO STATUS: ${newStatus}`);
-    addAuditLog({
-      level: newStatus === 'ĐÃ HOÀN THÀNH' ? 'SUCCESS' : 'INFO',
-      category: 'TICKETS',
-      action: 'UPDATE_TICKET_STATUS',
-      details: `Cập nhật trạng thái sự cố [${ticketId}] sang "${newStatus}". Phụ trách: ${engineer || currentUser.name}. Ghi chú: ${notes || 'N/A'}`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
-      targetId: ticketId,
-      sha256Hash: fakeSha256(),
-    });
   };
 
-  // Handle Dual E2E Digital Verification
   const handleVerifyE2E = (
     ticketId: string,
     itSignature: string,
     userSignature: string,
     verificationMethod: 'DIGITAL_CODE' | 'FILE_UPLOAD' = 'DIGITAL_CODE',
-    signedFileInfo?: {
-      name: string;
-      url: string;
-      type: string;
-      uploadTime: string;
-      hash: string;
-    }
+    signedFileInfo?: { name: string; url: string; type: string; uploadTime: string; hash: string }
   ) => {
-    const now = new Date().toISOString();
-
-    setTickets((prev) =>
-      prev.map((t) => {
-        if (t.id === ticketId) {
-          return {
-            ...t,
-            e2eVerified: true,
-            itSignature,
-            userSignature,
-            verificationMethod,
-            signedFileName: signedFileInfo?.name,
-            signedFileUrl: signedFileInfo?.url,
-            signedFileType: signedFileInfo?.type,
-            signedFileUploadTime: signedFileInfo?.uploadTime || now,
-            signedFileHash: signedFileInfo?.hash,
-            updatedAt: now,
-          };
-        }
-        return t;
-      })
-    );
-
-    if (selectedTicket && selectedTicket.id === ticketId) {
-      setSelectedTicket((prev) =>
-        prev
-          ? {
-              ...prev,
-              e2eVerified: true,
-              itSignature,
-              userSignature,
-              verificationMethod,
-              signedFileName: signedFileInfo?.name,
-              signedFileUrl: signedFileInfo?.url,
-              signedFileType: signedFileInfo?.type,
-              signedFileUploadTime: signedFileInfo?.uploadTime || now,
-              signedFileHash: signedFileInfo?.hash,
-            }
-          : null
-      );
-    }
-
-    const logDetails = verificationMethod === 'FILE_UPLOAD'
-      ? `Nộp biên bản nghiệm thu ký số bằng file đính kèm: ${signedFileInfo?.name || 'File.pdf'}. Đóng vết thời gian TSA lúc ${signedFileInfo?.uploadTime || now}. Hash: ${signedFileInfo?.hash}`
-      : `Xác thực thành công cặp chữ ký số PKI hai chiều: CNTT [${itSignature}] & Bác sĩ [${userSignature}] cho ticket [${ticketId}].`;
-
+    store.verifyE2E(ticketId, itSignature, userSignature, verificationMethod, signedFileInfo);
     showNotification(`E2E DUAL SIGNATURE VERIFIED FOR TICKET [${ticketId}]`);
-
-    addAuditLog({
-      level: 'KÝ SỐ',
-      category: 'KÝ SỐ',
-      action: verificationMethod === 'FILE_UPLOAD' ? 'UPLOAD_SIGNATURE_DOC' : 'VERIFY_E2E_SMARTCA_CODE',
-      details: logDetails,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
-      targetId: ticketId,
-      signedFileName: signedFileInfo?.name,
-      signedFilePreview: signedFileInfo?.url,
-      sha256Hash: signedFileInfo?.hash || fakeSha256(),
-    });
   };
 
   const criticalCount = tickets.filter(
@@ -515,7 +304,7 @@ export default function App() {
               QUẢN LÝ VẬN HÀNH
             </h1>
 
-            {/* Bottom Line: Terracotta Orange in Light Mode, Acid Lime in Dark Mode */}
+            {/* Bottom Line: Terracotta Orange in Light White, Acid Lime in Dark Mode */}
             <div
               className={`text-[36px] sm:text-[56px] md:text-[76px] lg:text-[92px] font-extrabold bg-transparent mt-2 sm:mt-3 leading-tight ${
                 theme === 'light'
@@ -540,20 +329,20 @@ export default function App() {
           </div>
         </section>
         ) : (
-        <section className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 pt-1 pb-1">
-          <div>
-            <h1 className="font-display text-xl sm:text-2xl md:text-3xl text-white uppercase tracking-widest font-bold">
+          <section className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 pt-1 pb-1">
+            <div>
+              <h1 className="font-display text-xl sm:text-2xl md:text-3xl text-white uppercase tracking-widest font-bold">
+                {VIEW_META[activeTab]?.title || activeTab}
+              </h1>
+              <p className="font-mono text-[11px] sm:text-xs text-white/50 mt-0.5">
+                {VIEW_META[activeTab]?.sub || 'Trung tâm điều hành CNTT Bệnh viện'}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-acid-lime/40 bg-card-bg/80 text-[11px] font-mono font-bold uppercase tracking-widest text-acid-lime self-start sm:self-auto">
+              <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse" />
               {VIEW_META[activeTab]?.title || activeTab}
-            </h1>
-            <p className="font-mono text-[11px] sm:text-xs text-white/50 mt-0.5">
-              {VIEW_META[activeTab]?.sub || 'Trung tâm điều hành CNTT Bệnh viện'}
-            </p>
-          </div>
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-acid-lime/40 bg-card-bg/80 text-[11px] font-mono font-bold uppercase tracking-widest text-acid-lime self-start sm:self-auto">
-            <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse" />
-            {VIEW_META[activeTab]?.title || activeTab}
-          </span>
-        </section>
+            </span>
+          </section>
         )}
 
         {/* Tab Selection Area */}
@@ -584,7 +373,7 @@ export default function App() {
                 <TicketsView
                   tickets={tickets}
                   currentUser={currentUser}
-                  onSelectTicket={(t) => setSelectedTicket(t)}
+                  onSelectTicket={(t) => setSelectedTicketId(t.id)}
                   onOpenDrawer={() => setIsDrawerOpen(true)}
                 />
               )}
@@ -636,7 +425,7 @@ export default function App() {
               {(activeTab === 'NHẬT KÝ AUDIT' || (activeTab as string) === 'AUDIT LOGS') && (
                 <AuditLogsView
                   logs={auditLogs}
-                  onAddLog={(newLog) => setAuditLogs((prev) => [newLog, ...prev])}
+                  onAddLog={(newLog) => store.addAuditLog(newLog)}
                   currentUser={currentUser}
                 />
               )}
@@ -662,7 +451,7 @@ export default function App() {
       <TicketDetailModal
         key={selectedTicket ? selectedTicket.id : 'no-ticket'}
         ticket={selectedTicket}
-        onClose={() => setSelectedTicket(null)}
+        onClose={() => setSelectedTicketId(null)}
         onUpdateStatus={handleUpdateTicketStatus}
         onVerifyE2E={handleVerifyE2E}
       />
