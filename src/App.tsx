@@ -26,6 +26,57 @@ const VisualBackdrop = ({ theme }: { theme: 'dark' | 'light' }) => {
   );
 };
 
+// Nền tĩnh nhẹ (gradient + lưới chấm CSS, không animation) cho các tab dữ liệu
+const StaticBackdrop = ({ theme }: { theme: 'dark' | 'light' }) => {
+  const isLight = theme === 'light';
+  const dot = isLight ? '#E05D38' : '#CCFF00';
+  return (
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+      {/* Basé radial glow (top) */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(120% 85% at 50% 0%, ${
+            isLight ? 'rgba(224,93,56,0.10)' : 'rgba(204,255,0,0.08)'
+          }, transparent 50%)`,
+        }}
+      />
+      {/* Lưới chấm mờ */}
+      <div
+        className="absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage: `radial-gradient(circle, ${dot} 1px, transparent 1.2px)`,
+          backgroundSize: '24px 24px',
+        }}
+      />
+      {/* Lưới đường kẻ nhẹ */}
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: `linear-gradient(${isLight ? 'rgba(15,23,42,0.07)' : 'rgba(255,255,255,0.06)'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? 'rgba(15,23,42,0.07)' : 'rgba(255,255,255,0.06)'} 1px, transparent 1px)`,
+          backgroundSize: '80px 80px',
+        }}
+      />
+      {/* Ba khối glow mềm */}
+      <div
+        className={`absolute -top-1/4 -left-1/4 h-[420px] w-[55%] rounded-full blur-[130px] ${
+          isLight ? 'bg-terracotta/15' : 'bg-acid-lime/15'
+        }`}
+      />
+      <div
+        className={`absolute top-1/3 -right-1/5 h-[420px] w-[45%] rounded-full blur-[140px] ${
+          isLight ? 'bg-blue-400/15' : 'bg-line-energy/15'
+        }`}
+      />
+      <div
+        className={`absolute -bottom-1/5 left-1/3 h-[360px] w-[45%] rounded-full blur-[150px] ${
+          isLight ? 'bg-neon-red/10' : 'bg-neon-red/10'
+        }`}
+      />
+    </div>
+  );
+};
+
 // Tiêu đề gọn cho các tab dữ liệu (thay cho hero khổng lồ khi xem dữ liệu)
 const VIEW_META: Record<string, { title: string; sub: string }> = {
   'TỔNG QUAN': { title: 'Tổng Quan Điều Hành', sub: 'Quản lý vận hành CNTT Bệnh viện' },
@@ -246,14 +297,17 @@ export default function App() {
           : 'bg-space-bg text-white selection:bg-acid-lime selection:text-black'
       }`}
     >
-      {/* Nền trực quan (Three.js + SVG) — chỉ render ở tab TỔNG QUAN để giảm tải GPU/bundle */}
-      {activeTab === 'TỔNG QUAN' && <VisualBackdrop theme={theme} />}
+      {/* Nền: particle chỉ ở TỔNG QUAN; tab dữ liệu dùng nền tĩnh nhẹ */}
+      {activeTab === 'TỔNG QUAN' ? (
+        <VisualBackdrop theme={theme} />
+      ) : (
+        <StaticBackdrop theme={theme} />
+      )}
 
       {/* z-30: Header Overlay */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenDrawer={() => setIsDrawerOpen(true)}
         criticalCount={criticalCount}
         currentUser={currentUser}
         staffList={staffList}

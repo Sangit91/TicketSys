@@ -3,7 +3,6 @@ import {
   Zap,
   ShieldCheck,
   Activity,
-  Plus,
   ChevronUp,
   ChevronDown,
   Server,
@@ -23,7 +22,6 @@ import { TechnicalStaffProfile, TabType, ROLE_PERMISSIONS } from '../types';
 interface HeaderProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
-  onOpenDrawer: () => void;
   criticalCount: number;
   currentUser: TechnicalStaffProfile;
   staffList: TechnicalStaffProfile[];
@@ -36,7 +34,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
-  onOpenDrawer,
   criticalCount,
   currentUser,
   staffList,
@@ -451,20 +448,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 )}
               </div>
-
-              {/* Action Button: + TẠO YÊU CẦU */}
-              <button
-                onClick={onOpenDrawer}
-                className={`flex items-center gap-1.5 font-mono font-bold text-xs uppercase px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl tracking-wider transition-all transform hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap shrink-0 border ${
-                  isLight
-                    ? 'bg-terracotta hover:bg-[#C84C2B] text-white border-terracotta shadow-[0_4px_14px_rgba(224,93,56,0.35)]'
-                    : 'bg-acid-lime hover:bg-acid-lime-dim text-black border-acid-lime shadow-[0_0_15px_rgba(204,255,0,0.3)]'
-                }`}
-              >
-                <Plus className="w-4 h-4 stroke-[3]" />
-                <span className="hidden sm:inline">TẠO YÊU CẦU</span>
-                <span className="sm:hidden">TẠO MỚI</span>
-              </button>
 
               {/* Logout Button */}
               {onLogout && (
