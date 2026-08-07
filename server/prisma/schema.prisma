@@ -1,0 +1,475 @@
+// TicketSys — Prisma Schema (PostgreSQL)
+// Tham chiếu: docs/architecture-backend-db.md (§3) + docs/api-plan.md
+// Enum dùng giá trị ASCII (không dấu) — map sang nhãn tiếng Việt ở tầng API/UI.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUM ============
+enum UserRole {
+  ADMIN
+  DOCTOR
+  NURSE
+  HARDWARE_TECH
+  SOFTWARE_TECH
+  TECHNICIAN
+}
+
+enum ShiftStatus {
+  DANG_TRUC
+  SAN_SANG
+  NGOAI_GIO
+}
+
+enum Priority {
+  P1_KHAP
+  P2_CAO
+  P3_TRUNG_BINH
+  P4_THAP
+}
+
+enum TicketStatus {
+  OPEN
+  ASSIGNED
+  WORKING
+  WAIT_USER
+  DONE
+  CLOSED
+  CANCELED
+}
+
+enum TicketType {
+  INCIDENT
+  SERVICE_REQUEST
+  CHANGE
+}
+
+enum IssueCategory {
+  PHAN_CUNG_Y_TE
+  PHAN_MEM_HIS_PACS_LIS
+  MANG_HA_TANG
+  TAI_KHOAN_CHU_KY_SO
+  AN_NINH_MANG_DU_LIEU
+}
+
+enum VerificationMethod {
+  DIGITAL_CODE
+  FILE_UPLOAD
+}
+
+enum AssetType {
+  MAY_CHU_HIS_PACS
+  MAY_TRAM_KHAM_BENH
+  SWITCH_QUANG_TRUNG_TAM
+  CUM_XU_LY_HINH_ANH
+  CONG_AN_NINH_MANG
+  MAY_IN_MUC_IN
+  THIET_BI_KY_SO
+  HA_TANG_UPS
+}
+
+enum AssetHealth {
+  TOI_UU
+  SUY_GIAM
+  NGUY_CAP
+  BAO_TRI
+}
+
+enum OperationalStatus {
+  DANG_SU_DUNG
+  DANG_BAO_TRI
+  TRONG_KHO_DU_PHONG
+  DA_THANH_LY
+}
+
+enum HistoryType {
+  NHAP_XUAT
+  DI_DOI
+  BAO_TRI
+  THAY_MUC
+  CHUYEN_TRANG_THAI
+}
+
+enum ConsumableType {
+  INK
+  SSD
+  RAM
+  CMOS_BATTERY
+  OTHER
+}
+
+enum AuditLevel {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  SECURITY
+  KY_SO
+}
+
+enum AuditCategory {
+  TICKETS
+  INVENTORY
+  TOPOLOGY
+  DEPARTMENTS
+  RBAC
+  KY_SO
+  HEALTHTEST
+  SYSTEM
+  SECURITY
+}
+
+enum E2EVerificationMethod {
+  DIGITAL_CODE
+  FILE_UPLOAD
+}
+
+// ============ USERS & RBAC ============
+model User {
+  id           String      @id @default(cuid())
+  username     String      @unique
+  passwordHash String
+  roleType     UserRole
+  name         String
+  phone        String?
+  email        String      @unique
+  avatarUrl    String?
+  specialty    String?
+  shiftStatus  ShiftStatus @default(SAN_SANG)
+  isActive     Boolean     @default(true)
+  lastLoginAt  DateTime?
+  deletedAt    DateTime?
+  deletedBy    String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  departments     UserDepartment[]
+  refreshTokens   RefreshToken[]
+  createdTickets  Ticket[]           @relation("CreatedTickets")
+  assignedTickets Ticket[]           @relation("AssignedTickets")
+  ticketLogs      TicketLog[]        @relation("TicketLogs")
+  comments        TicketComment[]
+  notifications   Notification[]
+  audits          AuditLog[]
+  attachments     TicketAttachment[]
+  histories       AssetHistory[]
+  consumableUses  ConsumableUse[]
+  assignedAssets  Asset[]
+
+  @@index([roleType])
+  @@index([shiftStatus])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  ip        String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ============ DEPARTMENT ============
+model Department {
+  id               String    @id @default(cuid())
+  name             String
+  code             String    @unique
+  lead             String?
+  headcount        Int       @default(0)
+  allocatedBudget  String?
+  networkBandwidth Float     @default(10)
+  healthIndex      Int? // tính từ backend (không hardcode)
+  deletedAt        DateTime?
+  deletedBy        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  users       UserDepartment[]
+  tickets     Ticket[]
+  assets      Asset[]
+  consumables Consumable[]
+
+  // (optional) c99
+  @@index([code])
+}
+
+model UserDepartment {
+  userId       String
+  departmentId String
+  assignedAt   DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, departmentId])
+  @@index([departmentId])
+}
+
+// ============ SLA ============
+model SlaPolicy {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  priority        Priority
+  responseHours   Int
+  resolutionHours Int
+  breachNotify    Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  tickets         Ticket[]
+}
+
+// ============ TICKET ============
+model Ticket {
+  id             String        @id @default(cuid())
+  title          String
+  description    String
+  category       IssueCategory
+  priority       Priority
+  status         TicketStatus  @default(OPEN)
+  type           TicketType    @default(INCIDENT)
+  requestorName  String
+  requestorRole  String?
+  requestorPhone String?
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  assetId String?
+  asset   Asset?  @relation(fields: [assetId], references: [id])
+
+  assignedEngineerId String?
+  assignedEngineer   User?   @relation("AssignedTickets", fields: [assignedEngineerId], references: [id])
+  createdById        String?
+  createdBy          User?   @relation("CreatedTickets", fields: [createdById], references: [id])
+
+  slaPolicyId String?
+  slaPolicy   SlaPolicy? @relation(fields: [slaPolicyId], references: [id])
+
+  requiresE2E     Boolean    @default(false)
+  e2eVerified     Boolean    @default(false)
+  e2e             TicketE2E?
+  resolutionNotes String?
+  escalationLevel Int        @default(0)
+
+  dueAt           DateTime?
+  firstResponseAt DateTime?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  logs        TicketLog[]
+  comments    TicketComment[]
+  attachments TicketAttachment[]
+  audits      AuditLog[]
+
+  @@index([status, priority])
+  @@index([departmentId])
+  @@index([assignedEngineerId])
+}
+
+model TicketLog {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  action    String
+  note      String?
+  actorId   String?
+  actor     User?    @relation("TicketLogs", fields: [actorId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+model TicketE2E {
+  ticketId           String                @id
+  ticket             Ticket                @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  verificationMethod E2EVerificationMethod
+  userSignature      String?
+  itSignature        String?
+  signedFileName     String?
+  signedFileUrl      String?
+  signedFileType     String?
+  signedFileSize     Int?
+  uploadTime         DateTime?
+  sha256Hash         String?
+  verifiedAt         DateTime?
+}
+
+model TicketAttachment {
+  id         String   @id @default(cuid())
+  ticketId   String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploaderId String?
+  uploader   User?    @relation(fields: [uploaderId], references: [id])
+  category   String
+  fileName   String
+  fileUrl    String
+  mimeType   String?
+  size       Int?
+  sha256Hash String?
+  uploadedAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+model TicketComment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+// ============ ASSET ============
+model Asset {
+  id           String    @id @default(cuid())
+  name         String
+  serialNumber String    @unique
+  assetCode    String    @unique
+  type         AssetType
+  manufacturer String?
+  model        String?
+  cpuModel     String?
+  ramGb        Int?
+  diskGb       Int?
+  os           String?
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  assignedToId String?
+  assignedTo   User?      @relation(fields: [assignedToId], references: [id])
+
+  ipAddress      String?
+  macAddress     String?
+  subnetMask     String?
+  vlan           String?
+  defaultGateway String?
+
+  health              AssetHealth
+  operationalStatus   OperationalStatus @default(DANG_SU_DUNG)
+  temperature         Float?
+  cpuUsage            Int?
+  memoryUsage         Int?
+  uptimeDays          Int?
+  location            String?
+  lastMaintenanceDate DateTime?
+  supplierName        String?
+  maintenanceDate     DateTime?
+  importDate          DateTime?
+  warrantyExpiryDate  DateTime?
+  topologyNodeId      String?
+
+  deletedAt DateTime?
+  deletedBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  histories AssetHistory[]
+  tickets   Ticket[]
+
+  @@index([operationalStatus])
+  @@index([departmentId])
+}
+
+model AssetHistory {
+  id               String      @id @default(cuid())
+  assetId          String
+  asset            Asset       @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  type             HistoryType
+  description      String
+  actorId          String?
+  actor            User?       @relation(fields: [actorId], references: [id])
+  fromDepartmentId String?
+  toDepartmentId   String?
+  fromLocation     String?
+  toLocation       String?
+  receivedById     String?
+  transferReason   String?
+  decisionNumber   String?
+  createdAt        DateTime    @default(now())
+
+  @@index([assetId])
+}
+
+model Consumable {
+  id            String          @id @default(cuid())
+  name          String
+  type          ConsumableType
+  departmentId  String?
+  department    Department?     @relation(fields: [departmentId], references: [id])
+  productCode   String?
+  stockQuantity Int             @default(0)
+  reorderLevel  Int             @default(0)
+  supplierName  String?
+  unitPrice     Decimal?        @db.Money
+  createdAt     DateTime        @default(now())
+  deletedAt     DateTime?
+  uses          ConsumableUse[]
+}
+
+model ConsumableUse {
+  id           String     @id @default(cuid())
+  consumableId String
+  consumable   Consumable @relation(fields: [consumableId], references: [id], onDelete: Cascade)
+  quantity     Int
+  actorId      String?
+  actor        User?      @relation(fields: [actorId], references: [id])
+  note         String?
+  createdAt    DateTime   @default(now())
+
+  @@index([consumableId])
+}
+
+// ============ NOTIFICATION ============
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  isRead    Boolean  @default(false)
+  linkTo    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+// ============ AUDIT LOG (append-only) ============
+model AuditLog {
+  id                String        @id @default(cuid())
+  userId            String?
+  user              User?         @relation(fields: [userId], references: [id])
+  level             AuditLevel
+  category          AuditCategory
+  action            String
+  details           String
+  ip                String?
+  targetId          String?
+  payloadDiff       Json?
+  signedFilePreview String?
+  sha256Hash        String?
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  ticket            Ticket?       @relation(fields: [ticketId], references: [id])
+  ticketId          String?
+
+  @@index([createdAt, category])
+  @@index([userId])
+}
+// Lưu ý: trigger chặn UPDATE/DELETE cho bảng này (xem docs §4)

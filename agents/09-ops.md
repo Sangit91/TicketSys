@@ -19,6 +19,15 @@
   - Copy file quan trọng sang thư mục temp (`C:\Users\ADMINI~1\AppData\Local\Temp\opencode`).
 - Ghi nhận bản backup gần nhất vào `memory.md`.
 
+## 2b. Docker / DB backup (PostgreSQL 16 docker — host 9432)
+
+- **PORT**: PostgreSQL container `ticketsys-db` (host **9432**→5432) · MinIO host **9100/9101** · API tương lai **9001**. KHÔNG đụng local 5432.
+- Dump DB (đúng container user/db):
+  `docker exec ticketsys-db pg_dump -U ticketsys -d ticketsys -Fc --file=/pgdata/backup-$(date +%F).dump`
+- Restore:
+  `docker exec -i ticketsys-db pg_restore -U ticketsys -d ticketsys --clean --if-exists < backup.dump`
+- Xem thêm kế hoạch backup offsite/WAL trong `docs/architecture-backend-db.md` §5.
+
 ## 3. OpenBrain (plugin memory)
 
 - Plugin: `./openbrain` (clone từ `https://github.com/CodebyKDvn/openbrain.git`). **KHÔNG commit folder này**.

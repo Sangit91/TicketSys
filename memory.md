@@ -18,12 +18,19 @@
 ## 🏗️ Cấu trúc dự án hiện tại
 
 ```text
-src/
-├── App.tsx            ← Root + state chính + render theo activeTab
+src/                     # Frontend (SPA)
+├── App.tsx              # Shell: activeTab/drawer/theme/notification
 ├── main.tsx / index.css
-├── types.ts            # Domain types (nguồn sự thật)
-├── data/mockData.ts    # Data mẫu
-└── components/         # 18 views/components (Header, TicketsView, InventoryView, AssetFlowMap...)
+├── types.ts             # Domain types (nguồn sự thật)
+├── data/useDataStore.ts # DATA LAYER (adapter backend)
+├── state/sessionStore.ts# Zustand session
+├── hooks/               # usePagedRows, useTrapFocus, usePrefersReducedMotion
+└── components/          # Views code-split + ErrorBoundary + Pagination...
+docs/                    # architecture-backend-db.md · api-plan.md
+server/                  # BACKEND (mới) — infra docker + prisma
+├── docker-compose.yml   # db (9432) + minio (9100/9101)
+├── .env.example / .env (gitignored)
+└── prisma/schema.prisma # DB schema (15 bảng, đã validate)
 ```
 
 ## 🚧 Backup gần nhất
@@ -31,11 +38,20 @@ src/
 - **Git checkpoint:** initial commit `6af2125` đã push `origin/main` (2026-08-06).
 - Backup token ruổi: `Temp\opencode\ticketsys-backup-before-tokens`.
 
-## ⚠️ Quy tắc môi trường BẮT BUỘC NHỚ
+## ⚠️ Quy tắc môi trường BẮT BUỘC NHỚ (PORT — tránh nhầm)
 
-- Port dev: **9000** (`npm run dev`, host 0.0.0.0, HMR).
+| Vị trí | Host port | → Container | Ghi chú |
+|---|---|---|---|
+| Frontend dev (vite) | **9000** | — | `npm run dev`, host 0.0.0.0, HMR |
+| PostgreSQL (docker) | **9432** | 5432 | **KHÔNG đụng local 5432** (Postgres native đang chiếm) |
+| MinIO S3 | **9100** | 9000 | 9000 đã là vite dev |
+| MinIO console | **9101** | 9001 | web admin |
+| API NestJS (sẽ làm) | **9001** | 3001 | thêm service trong compose |
+
+- Chạy infra: `docker compose -f server/docker-compose.yml up -d` (db + minio, healthcheck).
+- Backend config: `server/.env` (thật, **gitignored**) · `server/.env.example` (mẫu) · Prisma schema `server/prisma/schema.prisma` (valid).
 - `@google/genai` đã khai báo nhưng **CHƯA dùng** trong src (dự trù Gemini server-side).
-- Mọi thao tác ghi data phải qua handler App.tsx + `addAuditLog`.
+- Mọi thao tác ghi data phải qua data layer `useDataStore` (+ audit).
 - Cả 2 theme (dark/light) luôn phải render đúng.
 
 ## 🔍 Quality Gate

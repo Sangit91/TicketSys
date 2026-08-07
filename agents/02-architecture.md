@@ -23,6 +23,16 @@ src/
 └── components/                ← Views code-split (React.lazy) + ErrorBoundary + Pagination…
 ```
 
+### Cấu trúc backend `server/` (mới, infra Docker)
+```text
+server/
+├── docker-compose.yml   # db (host 9432→5432) + minio (9100 S3 / 9101 console)
+├── .env.example         # mẫu config (DATABASE_URL, JWT, MinIO...) — .env thật gitignored
+└── prisma/schema.prisma # DB schema 15 bảng (valid; nguồn: docs/architecture-backend-db.md)
+```
+- **PORT BẮT BUỘC NHỚ:** vite **9000** · PostgreSQL docker **9432** (tránh local 5432) · MinIO **9100/9101** · API tương lai **9001**. Xem bảng đầy đủ ở `memory.md`.
+- Khởi động DB/MinIO: `docker compose -f server/docker-compose.yml up -d`.
+
 ## 3. State management — 3 lớp tách rõ
 
 1. **Session & Permission** → `src/state/sessionStore.ts` (**Zustand + persist** `ticketsys-session`): `currentUser`, `isLoggedIn`, `login/logout/switchUser`, `updateAssignedDepartments`. App dùng `useSessionStore`, không nhân bản session.
