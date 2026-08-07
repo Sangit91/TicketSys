@@ -27,6 +27,12 @@
 - **Verify**: GET /api/departments, /api/users, /api/users/:id/departments OK.
 - Fix: `JwtGlobalModule` (Global) — JwtService sẵn cho mọi guard/module.
 
+### Module Tickets (CRUD + workflow + ký ảnh chữ ký)
+- `TicketsModule`: list (filter + phân trang + scope KTV theo khoa) · detail (kèm logs/comments/e2e) · create · `changeStatus` (workflow backend-check) · assign · comment · sign.
+- **Ký nội bộ = ẢNH CHỮ KÝ** (theo yêu cầu, không token crypto): `User.signatureImageUrl` map sẵn; `POST /api/tickets/:id/sign` tự gắn ảnh chữ ký của người ký + `TicketE2E`(method `SIGNATURE_IMAGE`, signedBy, verifiedAt) + audit. Token crypto để sau.
+- Schema: thêm `User.signatureImageUrl`, `TicketE2E.signedById/signatureImageUrl`, enum `SIGNATURE_IMAGE`; sửa enum `Priority` `P1_KHAP`→`P1_KHAN_CAP` (db push — migrate dev không interactive).
+- **Verify**: create→assign→WORKING→DONE; `CLOSED trước ký` → 400 (workflow); `SIGN` → e2eVerified=true, method=SIGNATURE_IMAGE; `CLOSED sau ký` → OK.
+
 ## PHASE 3 — Production hardening (tải nhanh + chống lỗi + type chặt) ([2026-08-06])
 
 ### Code-split views + ErrorBoundary + Skeleton

@@ -28,7 +28,7 @@ enum ShiftStatus {
 }
 
 enum Priority {
-  P1_KHAP
+  P1_KHAN_CAP
   P2_CAO
   P3_TRUNG_BINH
   P4_THAP
@@ -128,6 +128,7 @@ enum AuditCategory {
 enum E2EVerificationMethod {
   DIGITAL_CODE
   FILE_UPLOAD
+  SIGNATURE_IMAGE
 }
 
 // ============ USERS & RBAC ============
@@ -139,8 +140,9 @@ model User {
   name         String
   phone        String?
   email        String      @unique
-  avatarUrl    String?
-  specialty    String?
+  avatarUrl      String?
+  signatureImageUrl String?  // ảnh chữ ký của nhân viên (map sẵn, gắn vào văn bản khi "ký")
+  specialty      String?
   shiftStatus  ShiftStatus @default(SAN_SANG)
   isActive     Boolean     @default(true)
   lastLoginAt  DateTime?
@@ -159,8 +161,9 @@ model User {
   audits          AuditLog[]
   attachments     TicketAttachment[]
   histories       AssetHistory[]
-  consumableUses  ConsumableUse[]
+  consumableUses ConsumableUse[]
   assignedAssets  Asset[]
+  ticketSignatures TicketE2E[] @relation("TicketSignatures")
 
   @@index([roleType])
   @@index([shiftStatus])
@@ -294,18 +297,21 @@ model TicketLog {
 }
 
 model TicketE2E {
-  ticketId           String                @id
-  ticket             Ticket                @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId        String @id
+  ticket          Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   verificationMethod E2EVerificationMethod
-  userSignature      String?
-  itSignature        String?
-  signedFileName     String?
-  signedFileUrl      String?
-  signedFileType     String?
-  signedFileSize     Int?
-  uploadTime         DateTime?
-  sha256Hash         String?
-  verifiedAt         DateTime?
+  userSignature   String?
+  itSignature     String?
+  signedById      String?
+  signedBy        User?  @relation("TicketSignatures", fields: [signedById], references: [id])
+  signatureImageUrl String?  // ảnh chữ ký đã gắn vào văn bản (cơ chế nội bộ hiện tại)
+  signedFileName  String?
+  signedFileUrl   String?
+  signedFileType  String?
+  signedFileSize  Int?
+  uploadTime      DateTime?
+  sha256Hash      String?
+  verifiedAt      DateTime?
 }
 
 model TicketAttachment {

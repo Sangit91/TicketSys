@@ -68,7 +68,7 @@ export class UsersService {
 
   async update(
     id: string,
-    dto: Partial<{ name: string; phone: string; email: string; specialty: string; shiftStatus: ShiftStatus }>
+    dto: Partial<{ name: string; phone: string; email: string; specialty: string; shiftStatus: ShiftStatus; signatureImageUrl: string }>
   ) {
     const existing = await this.prisma.user.findFirst({ where: { id, deletedAt: null } });
     if (!existing) throw new NotFoundException('Tài khoản không tồn tại');

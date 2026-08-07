@@ -74,6 +74,7 @@ export class UsersController {
         email: body.email,
         specialty: body.specialty,
         shiftStatus: body.shiftStatus as ShiftStatus | undefined,
+        signatureImageUrl: body.signatureImageUrl,
       })
       .then((r) => ({ data: r }));
   }

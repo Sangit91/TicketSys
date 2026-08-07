@@ -59,12 +59,13 @@
 | GET | `/api/tickets/:id/attachments` | auth | danh sách file đính kèm |
 | POST | `/api/tickets/:id/attachments` | auth | upload (MinIO) |
 
-### Ký số E2E
+### Ký xác nhận (ẢNH CHỮ KÝ — cơ chế nội bộ hiện tại; token crypto phát triển sau)
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
-| POST | `/api/tickets/:id/e2e/verify-code` | CNTT + Khoa | ký 2 chiều `{ itSignature, userSignature }` |
-| POST | `/api/tickets/:id/e2e/verify-file` | CNTT + Khoa | upload biên bản ký (SHA-256, TSA) |
-| GET | `/api/tickets/:id/e2e` | auth | thông tin bản ký số |
+| PATCH | `/api/users/:id` | ADMIN/self | khai báo `signatureImageUrl` — ảnh chữ ký map sẵn của nhân viên |
+| POST | `/api/tickets/:id/sign` | auth | ký: tự load ảnh chữ ký của người ký gắn vào văn bản + ghi `TicketE2E` (method `SIGNATURE_IMAGE`) + audit |
+| POST | `/api/tickets/:id/e2e/verify-file` | CNTT + Khoa | *(tuỳ chọn)* upload biên bản ký (SHA-256) |
+| GET | `/api/tickets/:id/e2e` | auth | thông tin bản ký (ảnh, người ký, thời gian) |
 
 ### Assets, Consumables
 | Method | Path | Quyền | Mô tả |
