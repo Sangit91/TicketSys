@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ParticleBackground } from './components/ParticleBackground';
-import { HeroGraphic } from './components/HeroGraphic';
 import { Header } from './components/Header';
 import { FooterMarquee } from './components/FooterMarquee';
 import { ActionDrawer } from './components/ActionDrawer';
@@ -12,6 +10,29 @@ import { NotificationBanner } from './components/NotificationBanner';
 import { LoginPage } from './components/LoginPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
+
+// Background trực quan (Three.js / SVG) — chỉ tải khi cần (login + TỔNG QUAN), tránh nặng GPU/bundle ở tab dữ liệu
+const ParticleBackground = lazy(() => import('./components/ParticleBackground').then((m) => ({ default: m.ParticleBackground })));
+const HeroGraphic = lazy(() => import('./components/HeroGraphic').then((m) => ({ default: m.HeroGraphic })));
+
+// Bao nền trực quan khi cần hiển thị (login + TỔNG QUAN)
+const VisualBackdrop = ({ theme }: { theme: 'dark' | 'light' }) => (
+  <Suspense fallback={null}>
+    <ParticleBackground />
+    <HeroGraphic theme={theme} />
+  </Suspense>
+);
+
+// Tiêu đề gọn cho các tab dữ liệu (thay cho hero khổng lồ khi xem dữ liệu)
+const VIEW_META: Record<string, { title: string; sub: string }> = {
+  'TỔNG QUAN': { title: 'Tổng Quan Điều Hành', sub: 'Quản lý vận hành CNTT Bệnh viện' },
+  'YÊU CẦU XỬ LÝ': { title: 'Yêu Cầu Xử Lý', sub: 'Phiếu sự cố, phân công & ký số xác nhận' },
+  'THIẾT BỊ & TÀI SẢN': { title: 'Thiết Bị & Tài Sản', sub: 'Quản lý thiết bị, mực in, di dời & bảo trì' },
+  'SƠ ĐỒ HẠ TẦNG': { title: 'Sơ Đồ Hạ Tầng', sub: 'Bản đồ mạng & luồng dữ liệu liên khoa phòng' },
+  'KHOA PHÒNG': { title: 'Khoa Phòng', sub: 'Danh mục khoa, thiết bị & nhân sự phụ trách' },
+  'QUẢN TRỊ ROLES': { title: 'Quản Trị Roles', sub: 'Phân quyền RBAC & gán khoa phòng phụ trách' },
+  'NHẬT KÝ AUDIT': { title: 'Nhật Ký Audit', sub: 'Vết hoạt động, ký số & kiểm soát an ninh' },
+};
 
 // Code-split per-tab views (chunk riêng, chỉ tải khi tab được mở)
 const DashboardView = lazy(() => import('./components/DashboardView').then((m) => ({ default: m.DashboardView })));
@@ -405,11 +426,8 @@ export default function App() {
             : 'bg-space-bg text-white selection:bg-acid-lime selection:text-black'
         }`}
       >
-        {/* z-0: Three.js Particle Canvas Background */}
-        <ParticleBackground />
-
-        {/* z-10: SVG Server Network Architecture Graphic */}
-        <HeroGraphic theme={theme} />
+        {/* z-0 + z-10: Background trực quan (Three.js particle + SVG) — lazy */}
+        <VisualBackdrop theme={theme} />
 
         {/* z-20: Login Page Form & Role Selection Overlay */}
         <div className="relative z-20 min-h-screen flex flex-col justify-between">
@@ -433,11 +451,8 @@ export default function App() {
           : 'bg-space-bg text-white selection:bg-acid-lime selection:text-black'
       }`}
     >
-      {/* z-0: ParticleBackground (Three.js WebGL canvas) */}
-      <ParticleBackground />
-
-      {/* z-10: HeroGraphic (Abstract Server Node / Microchip render centered at bottom) */}
-      <HeroGraphic theme={theme} />
+      {/* Nền trực quan (Three.js + SVG) — chỉ render ở tab TỔNG QUAN để giảm tải GPU/bundle */}
+      {activeTab === 'TỔNG QUAN' && <VisualBackdrop theme={theme} />}
 
       {/* z-30: Header Overlay */}
       <Header
@@ -462,7 +477,8 @@ export default function App() {
 
       {/* z-20: Main Dashboard Content Container */}
       <main className="relative z-20 flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 pt-6 sm:pt-8 md:pt-12 pb-24 flex flex-col space-y-8">
-        {/* Hero Section Typography & Scramble Effect */}
+        {/* Hero / Title: hero lớn chỉ ở tab TỔNG QUAN; tab dữ liệu dùng tiêu đề gọn */}
+        {activeTab === 'TỔNG QUAN' ? (
         <section className="text-center space-y-4 pt-2 pb-2">
           {/* Top Status Eyebrow */}
           <div
@@ -523,6 +539,22 @@ export default function App() {
             <TypewriterText text="Trung tâm điều hành CNTT Bệnh viện: Tiếp nhận & xử lý sự cố y tế 24/7, giám sát hạ tầng thiết bị và sơ đồ luồng dữ liệu liên khoa phòng." />
           </div>
         </section>
+        ) : (
+        <section className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 pt-1 pb-1">
+          <div>
+            <h1 className="font-display text-xl sm:text-2xl md:text-3xl text-white uppercase tracking-widest font-bold">
+              {VIEW_META[activeTab]?.title || activeTab}
+            </h1>
+            <p className="font-mono text-[11px] sm:text-xs text-white/50 mt-0.5">
+              {VIEW_META[activeTab]?.sub || 'Trung tâm điều hành CNTT Bệnh viện'}
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-acid-lime/40 bg-card-bg/80 text-[11px] font-mono font-bold uppercase tracking-widest text-acid-lime self-start sm:self-auto">
+            <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse" />
+            {VIEW_META[activeTab]?.title || activeTab}
+          </span>
+        </section>
+        )}
 
         {/* Tab Selection Area */}
         <div className="w-full">

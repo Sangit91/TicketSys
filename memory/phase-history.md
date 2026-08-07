@@ -12,6 +12,11 @@
 - Fix 22 lỗi typing bị lộ: mockData `: SystemAuditLog[]`; bỏ so sánh status/health bằng literal Anh chết (RESOLVED/CLOSED/IN_PROGRESS/CRITICAL/DEGRADED); cast `node.data` qua `unknown`; bỏ prop `opacity` không tồn tại trên `<Background>` (2 file); thêm `'SECURITY'` vào `AuditLogCategory`; type `Variants` cho TypewriterText; cast `priority`; cloneElement ReactElement.
 - Backup trước: commit git.
 
+### Thu gọn hero + bỏ ParticleBackground ở tab dữ liệu
+- Hero (headline + Scramble/Typewriter) chỉ render ở tab `TỔNG QUAN`; các tab dữ liệu dùng thanh tiêu đề gọn (`VIEW_META` map, 1 dòng title + sub).
+- `ParticleBackground` + `HeroGraphic` chuyển `React.lazy` (bọc `Suspense fallback={null}`), chỉ mount ở login + tab TỔNG QUAN → tab dữ liệu không fetch chunk three.js.
+- Kết quả build: bundle chính 1.001MB → 479kB (gzip 143kB); `ParticleBackground` (three.js) tách chunk 515kB chỉ tải khi cần.
+
 ## PHASE 2 — Hoàn thiện UI nền tảng ([2026-08-06])
 
 ### Sửa bug + type-safety (6 bug P0)
