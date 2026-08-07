@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Ticket, TechnicalStaffProfile } from '../types';
+import { usePagedRows } from '../hooks/usePagedRows';
+import { Pagination } from './Pagination';
 import { Search, Filter, ShieldCheck, AlertTriangle, Clock, CheckCircle2, User, QrCode, Eye, Building } from 'lucide-react';
 
 interface TicketsViewProps {
@@ -42,6 +44,15 @@ export const TicketsView: React.FC<TicketsViewProps> = ({
 
     return matchesSearch && matchesPriority && matchesStatus;
   });
+
+  const pageSize = 8;
+  const pagination = usePagedRows(filteredTickets, pageSize, [
+    searchTerm,
+    selectedPriority,
+    selectedStatus,
+    onlyScopeDepartments,
+  ]);
+  const pageTickets = pagination.rows;
 
   const criticalCount = tickets.filter((t) => t.priority.includes('KHẨN CẤP') || t.priority.includes('CRITICAL')).filter(t => t.status !== 'ĐÃ HOÀN THÀNH' && t.status !== 'ĐÃ ĐÓNG').length;
   const inProgressCount = tickets.filter((t) => t.status === 'ĐANG XỬ LÝ').length;
@@ -201,7 +212,7 @@ export const TicketsView: React.FC<TicketsViewProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredTickets.map((ticket) => {
+                pageTickets.map((ticket) => {
                   const isCritical = ticket.priority.includes('KHẨN CẤP') || ticket.priority.includes('CRITICAL');
                   return (
                     <tr
@@ -322,6 +333,13 @@ export const TicketsView: React.FC<TicketsViewProps> = ({
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          pageSize={pageSize}
+          onPage={pagination.setPage}
+        />
       </div>
     </div>
   );

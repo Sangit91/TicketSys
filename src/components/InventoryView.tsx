@@ -5,6 +5,8 @@ import { generateId } from '../utils';
 import { AssetRelocationFlow } from './AssetRelocationFlow';
 import { AssetRelocationModal } from './AssetRelocationModal';
 import { useTrapFocus } from '../hooks/useTrapFocus';
+import { usePagedRows } from '../hooks/usePagedRows';
+import { Pagination } from './Pagination';
 import {
   Search,
   Activity,
@@ -162,6 +164,16 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
 
     return matchesSearch && matchesType && matchesHealth && matchesOperational;
   });
+
+  const pageSize = 9;
+  const pagination = usePagedRows(filteredItems, pageSize, [
+    searchTerm,
+    selectedType,
+    selectedHealth,
+    selectedOperationalStatus,
+    onlyScopeDepartments,
+  ]);
+  const pageItems = pagination.rows;
 
   const handleSimulatePing = (id: string) => {
     setIsPinging(id);
@@ -396,7 +408,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
 
       {/* Grid of Hardware & Ink Supplies */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredItems.map((item) => {
+        {pageItems.map((item) => {
           const isCritical = item.health === 'NGUY CẤP';
           const isDegraded = item.health === 'SUY GIẢM';
           const isPrinter = item.type === 'Máy In Y Tế & Mực In' || item.isPrinterSupply;
@@ -648,6 +660,14 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           );
         })}
       </div>
+
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        total={pagination.total}
+        pageSize={pageSize}
+        onPage={pagination.setPage}
+      />
 
       {/* Full Asset Detail & Lifecycle History Modal */}
       {selectedItemForDetail && (

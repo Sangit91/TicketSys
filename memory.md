@@ -60,12 +60,12 @@ src/
 | Data-access layer | ⏳ Chưa — xem pending |
 | Performance PHASE 3 | ✅ Code-split 7 view + Lazy + Suspense + ErrorBoundary + LoadingSkeleton; `@types/react` đã cài |
 | Thu gọn UI PHASE 3 | ✅ Hero chỉ ở TỔNG QUAN; ParticleBackground/HeroGraphic lazy + render ở login & TỔNG QUAN (cắt bundle chính 1MB→479kB) |
+| Phân trang bảng PHASE 3 | ✅ `usePagedRows` + `Pagination` cho Tickets (8/trang), Inventory (9), AuditLogs (10); auto reset về trang 1 khi lọc |
 | Backend / gemini AI | ⏳ Chưa (không backend; gemini chưa dùng) |
 | Tests / Docker | ⏳ Chưa có |
 
 ## 🔎 Audit / Pending Tasks
 
-- [ ] **Virtual list / phân trang bảng** — bảng Tickets/Inventory render toàn bộ `.map()`; với 1000 users cần phân trang/virtual.
 - [ ] **Data-access layer** — tách `useState(mock)` ra 1 lớp để nối backend.
 - [ ] **prefers-reduced-motion** — tắt hiệu ứng chuyển động theo hệ thống.
 - [ ] Dashboard: SLA metrics còn hardcode (1.8ms, 99.98%...) — nối với `SystemMetric`/mock khi có dữ liệu động.

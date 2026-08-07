@@ -17,6 +17,10 @@
 - `ParticleBackground` + `HeroGraphic` chuyển `React.lazy` (bọc `Suspense fallback={null}`), chỉ mount ở login + tab TỔNG QUAN → tab dữ liệu không fetch chunk three.js.
 - Kết quả build: bundle chính 1.001MB → 479kB (gzip 143kB); `ParticleBackground` (three.js) tách chunk 515kB chỉ tải khi cần.
 
+### Phân trang bảng (chuẩn bị dữ liệu lớn ~1000 users)
+- Tạo `src/hooks/usePagedRows.ts` (phân trang + auto reset trang 1 khi filter đổi) + `src/components/Pagination.tsx` (prev/next, window page, summary "X–Y / tổng").
+- Áp vào Tickets (8/trang), Inventory (9), AuditLogs (10). Thay `.map()` toàn bộ bằng slice theo trang.
+
 ## PHASE 2 — Hoàn thiện UI nền tảng ([2026-08-06])
 
 ### Sửa bug + type-safety (6 bug P0)

@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { SystemAuditLog, AuditLogLevel, AuditLogCategory, TechnicalStaffProfile } from '../types';
 import { generateId, fakeSha256 } from '../utils';
+import { usePagedRows } from '../hooks/usePagedRows';
+import { Pagination } from './Pagination';
 
 interface AuditLogsViewProps {
   logs: SystemAuditLog[];
@@ -65,6 +67,14 @@ export const AuditLogsView: React.FC<AuditLogsViewProps> = ({
 
     return matchesLevel && matchesCategory && matchesQuery;
   });
+
+  const pageSize = 10;
+  const pagination = usePagedRows(filteredLogs, pageSize, [
+    searchTerm,
+    selectedLevel,
+    selectedCategory,
+  ]);
+  const pageLogs = pagination.rows;
 
   // KPI Metrics
   const totalCount = logs.length;
@@ -361,8 +371,9 @@ export const AuditLogsView: React.FC<AuditLogsViewProps> = ({
             <div>Không tìm thấy nhật ký thao tác phù hợp với bộ lọc.</div>
           </div>
         ) : (
+          <>
           <div className="divide-y divide-white/5 overflow-x-auto">
-            {filteredLogs.map((log) => {
+            {pageLogs.map((log) => {
               const isSelected = selectedLogForInspection?.id === log.id;
 
               return (
@@ -431,6 +442,14 @@ export const AuditLogsView: React.FC<AuditLogsViewProps> = ({
               );
             })}
           </div>
+          <Pagination
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            total={pagination.total}
+            pageSize={pageSize}
+            onPage={pagination.setPage}
+          />
+          </>
         )}
       </div>
 
