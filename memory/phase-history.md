@@ -20,6 +20,13 @@
 ### Build config
 - `tsconfig.build.json` (exclude prisma) → `node dist/main.js`; `prisma:seed` = `ts-node prisma/seed.ts`.
 
+### Module Users & Departments (CRUD + gán khoa + soft delete)
+- `UsersModule`: list (filter role/shift/q) · create (argon2 hash) · update · `assignDepartments` (user_departments) · `departments(id)` · softDelete.
+- `DepartmentsModule`: list · detail (+ summary tính động: assetCount, activeTickets) · create (chống trùng code) · update · softDelete.
+- Guard mọi endpoint JWT + RBAC (`@Roles('ADMIN')` cho ghi/xoá).
+- **Verify**: GET /api/departments, /api/users, /api/users/:id/departments OK.
+- Fix: `JwtGlobalModule` (Global) — JwtService sẵn cho mọi guard/module.
+
 ## PHASE 3 — Production hardening (tải nhanh + chống lỗi + type chặt) ([2026-08-06])
 
 ### Code-split views + ErrorBoundary + Skeleton
