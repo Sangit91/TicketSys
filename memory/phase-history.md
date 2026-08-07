@@ -2,6 +2,24 @@
 
 > Append-only log. Số phase mới: lấy max + 1 (xem agents/08-memory-management.md).
 
+## PHASE 4 — Backend build (NestJS + Prisma) ([2026-08-07])
+
+### Scaffold + DB docker + migration
+- Docker infra `server/docker-compose.yml`: **Postgres host 9432→5432** (tránh local 5432), **MinIO 9100/9101** (tránh vite 9000), API tương lai **9001→3001**. DB/MinIO healthy.
+- `server/prisma/schema.prisma` (15 bảng, enum ASCII, valid) + migration `init` đã tạo bảng trong DB docker.
+- NestJS skeleton: PrismaModule/Service + `/api/health` → `{status:ok, db:up}`.
+
+### Module Auth (JWT + argon2 + RBAC)
+- Cài `@nestjs/jwt`, `argon2`, `cookie-parser`.
+- `AuthService`: `login` (argon2 verify) · `refresh` (rotate, lưu hash refresh) · `logout` (revoke) · `me` · `switch` (chỉ ADMIN).
+- Guards: `JwtAuthGuard` (Bearer) + `RolesGuard` (`@Roles`); decorator `CurrentUser`, `Roles`.
+- refresh token lưu httpOnly cookie `/api/auth`.
+- **Seed**: 5 user (admin/123,...) + 6 khoa + gán khoa (khớp frontend mock).
+- **Verify**: POST `/api/auth/login` (201) + GET `/api/auth/me` (Bearer) OK — nối DB docker.
+
+### Build config
+- `tsconfig.build.json` (exclude prisma) → `node dist/main.js`; `prisma:seed` = `ts-node prisma/seed.ts`.
+
 ## PHASE 3 — Production hardening (tải nhanh + chống lỗi + type chặt) ([2026-08-06])
 
 ### Code-split views + ErrorBoundary + Skeleton

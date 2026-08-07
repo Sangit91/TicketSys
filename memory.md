@@ -78,7 +78,7 @@ server/                  # BACKEND (mới) — infra docker + prisma
 | Performance PHASE 3 | ✅ Code-split 7 view + Lazy + Suspense + ErrorBoundary + LoadingSkeleton; `@types/react` đã cài |
 | Thu gọn UI PHASE 3 | ✅ Hero chỉ ở TỔNG QUAN; ParticleBackground/HeroGraphic lazy + render ở login & TỔNG QUAN (cắt bundle chính 1MB→479kB) |
 | Phân trang bảng PHASE 3 | ✅ `usePagedRows` + `Pagination` cho Tickets (8/trang), Inventory (9), AuditLogs (10); auto reset về trang 1 khi lọc |
-| Backend / DB | 📐 **Đã có thiết kế chốt** — `docs/architecture-backend-db.md` (schema + quan hệ + bảo mật + backup) + `docs/api-plan.md` (REST); đã hấp thu `TicketSys_Architecture_Improvement_Checklist`. Chưa code. |
+| Backend / DB | ✅ **Đang build (PHASE 4)** — NestJS + Prisma + PostgreSQL docker (9432) chạy được; Auth JWT+argon2+RBAC guard; 15 bảng + seed; API local :3001 / docker :9001 |
 | Gemini AI | ⏳ Chưa (chưa dùng `@google/genai`) |
 | Tests / Docker | ⏳ Chưa có (kế hoạch trong docs) |
 
@@ -90,7 +90,7 @@ server/                  # BACKEND (mới) — infra docker + prisma
 - [ ] Design tokens: còn ~153 hex `[#...]` phụ (panel #1A1A1A, #12131F, #1A1D2E...) chưa token hóa — được generic light selector cover.
 - [ ] Quyết định dùng thực tế `@google/genai` (Gemini) khi có yêu cầu AI.
 - [ ] (Tùy chọn) Thêm tests / Docker khi mở rộng.
-- Phase hiện tại: **PHASE 3 — Production hardening** (xem memory/phase-history.md).
+- Phase hiện tại: **PHASE 4 — Backend build** (xem memory/phase-history.md).
 
 ## 🧠 Quản lý state — Kiến trúc + plan (PHASE A triển khai, Phase B/C chờ backend)
 
