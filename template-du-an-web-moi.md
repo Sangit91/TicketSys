@@ -29,8 +29,13 @@ Dự án web mới/
 ├── openbrain/                 ← Plugin OpenBrain (clone, KHÔNG commit)
 ├── .env.example               ← Khai báo biến môi trường
 ├── dactaupdate.md             ← Buffer nâng version spec (nếu có spec docx)
-└── src/ + server/ + tests/    ← Code thật
+└── src/                       ← Code thật (frontend)
+    ├── App.tsx                    ← Shell: auth/session + routing; views nhận dữ liệu từ data layer
+    ├── data/useDataStore.ts      ← DATA LAYER: toàn bộ state + CRUD + audit (nối backend chỉ sửa file này)
+    ├── hooks/                    ← usePagedRows, useTrapFocus, usePrefersReducedMotion…
+    └── components/              ← Views code-split (React.lazy) + ErrorBoundary + Pagination
 ```
+> `server/ + tests/` tuỳ chọn (mỗi dự án quyết định có backend hay frontend-first).
 
 ---
 
@@ -77,6 +82,7 @@ Dự án web mới/
    - Không tạo technical debt (no copy-paste, no hardcode, no duplicate).
    - TypeScript Strict, Zero Any.
    - Quality Gate: `npm run lint && npm run build`.
+   - **Bắt buộc cài `@types/react` + `@types/react-dom`** (dev) — thiếu là TS coi React là `any`, che giấu lỗi type thật.
    - Luật restart container sau khi sửa frontend (nếu dùng Docker).
 
 ---
@@ -220,7 +226,9 @@ list_skills                                  # danh sách skill
 [ ] 10. Viết spec sản phẩm + dactaupdate.md (nếu có docx)
 [ ] 11. Verify OpenBrain hoạt động (search_memories trả kết quả)
 [ ] 12. Chạy thử 1 session agent hoàn chỉnh → confirm memory.md được ghi + OpenBrain ghi episodic
-[ ] 13. Commit + push
+[ ] 13. Cài `@types/react` + `@types/react-dom` (dev) — tránh TS coi React là `any`
+[ ] 14. Tách data-access layer (`useDataStore`) + code-split view + ErrorBoundary + phân trang bảng
+[ ] 15. Commit + push
 ```
 
 ---
@@ -235,6 +243,21 @@ list_skills                                  # danh sách skill
 6. **PHI/dữ liệu nhạy cảm ghi vào memory** → cấm tuyệt đối (dùng synthetic data).
 7. **Tạo file agents mới tùy tiện** → chỉ mở rộng file 0X có sẵn.
 8. **Không đồng bộ spec** → code lệch docx, phải ghi dactaupdate.md cùng session.
+
+---
+
+## 8. Kiến trúc & hiệu năng frontend — bài học rút ra (PHASE 3)
+
+> Kinh nghiệm có được từ việc chuẩn bị cho **~1000 người dùng**. Áp dụng làm chuẩn cho dự án mới.
+
+1. **Data-access layer tách riêng** — gom toàn bộ state + CRUD + audit vào `src/data/useDataStore.ts`. Component/App chỉ consume. Khi nối backend: **chỉ sửa 1 file**, không phải đụng UI.
+2. **App shell mỏng** — App chỉ giữ auth/session + UI state; dữ liệu hiển thị **derive từ data layer** (1 nguồn sự thật, không snapshot trùng → hết stale state).
+3. **Code-split view** — mỗi view = `React.lazy` + `Suspense` + `LoadingSkeleton`; thành phần nặng (Three.js/ReactFlow) tách chunk riêng, chỉ tải khi cần. Giảm bundle khởi tạo /2.
+4. **ErrorBoundary** (class component) bọc cấp cao + quanh vùng có rủi ro → lỗi render không làm trắng ứng dụng.
+5. **Bảng lớn → phân trang** (`usePagedRows` + `Pagination`) thay vì render toàn bộ `.map()`; auto reset trang khi đổi filter.
+6. **Design tokens**: Tailwind v4 `@theme` (đặt tên màu/thứ — VD `acid-lime`, `line-energy`) thay vì hex rải rác; kèm hệ override theme light.
+7. **A11y**: `prefers-reduced-motion` (tắt particle/text hiệu ứng nặng), focus trap cho modal, role/aria dialog.
+8. **`@types/react` bắt buộc** — thiếu ⇒ TS nhìn React là `any`, âm thầm che 20+ lỗi type thật.
 
 ---
 

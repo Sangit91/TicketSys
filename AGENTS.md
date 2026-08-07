@@ -8,7 +8,7 @@
 | # | File | Nhóm quy tắc | Khi nào đọc |
 |---|------|---------------|-------------|
 | 01 | agents/01-getting-started.md | Mục tiêu + bắt đầu session + nguyên tắc vàng | Mỗi session bắt buộc |
-| 02 | agents/02-architecture.md | Cấu trúc src/, state, không backend | Sửa cấu trúc / state / data flow |
+| 02 | agents/02-architecture.md | Cấu trúc src/, data layer (useDataStore), không backend | Sửa cấu trúc / state / data flow |
 | 03 | agents/03-ui-design-system.md | Design tokens + theme dark/light | Sửa UI / thêm component visual |
 | 04 | agents/04-components.md | Pattern component + reusable + a11y | Thêm/sửa component |
 | 05 | agents/05-project-ux.md | UX ngành CNTT y tế (hospital-ux) | Thay đổi flow / nội dung tiếng Việt |
@@ -24,6 +24,13 @@
 3. Tra cứu OpenBrain: `search_memories --query "TênTrang|TênComponent" --limit 10`
 4. Kiểm tra `git status` + `git log --oneline -5`
 5. Tùy task, đọc file `agents/0X` liên quan (lazy loading)
+
+## ⚡ Hiện trạng nhanh (PHASE 3 — cập nhật 2026-08-06)
+
+- **Dev port 9000** (host 0.0.0.0) · GitHub `origin` → https://github.com/Sangit91/TicketSys (branch `main`)
+- **State/CRUD tập trung** `src/data/useDataStore.ts` — nối backend chỉ sửa file này, App/views không đổi.
+- Bundle **code-split** 7 view (`React.lazy`) + `ErrorBoundary` + `LoadingSkeleton`; bảng **phân trang** (`usePagedRows`); design tokens `@theme`; `prefers-reduced-motion` (a11y).
+- Bắt buộc Quality Gate: `npm run lint && npm run build` (xem 07).
 
 ## 📌 Ghi chú tách file
 

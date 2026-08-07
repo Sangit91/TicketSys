@@ -33,7 +33,7 @@
 
 ## 3. Pattern bắt buộc
 
-1. **Audit log:** Mọi mutation data phải gọi handler của `App.tsx` (không ghi thẳng state trong component con).
+1. **Audit log:** Mọi mutation data phải đi qua data layer `useDataStore` (không ghi thẳng state trong component con).
 2. **Light theme:** Mọi component phải hoạt động ở cả 2 theme (dùng prop `theme` + lớp `.theme-light`).
 3. **Callback naming:** `onSubmit`, `onClose`, `onSelect`, `onUpdate...` — dữ liệu đẩy lên cha qua callback, không mutate state cha trực tiếp.
 4. **Modal/Drawer:** nhận `isOpen` + `onClose`; render có điều kiện hoặc dùng AnimatePresence.

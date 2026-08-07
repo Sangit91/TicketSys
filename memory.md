@@ -13,7 +13,7 @@
 
 - **Nguyên tắc:** Reusable First · Mobile First · Accessibility First · Hospital UX (critical first).
 - **Technical:** TypeScript Strict · Zero Any · Feature Based (1 view = 1 component) · Không backend (mock data).
-- **State:** React `useState` tập trung tại `App.tsx` — không Redux/Zustand.
+- **State/Data:** tập trung tại `src/data/useDataStore.ts` (React `useState`, không Redux/Zustand) — App shell chỉ giữ auth/session + UI state.
 
 ## 🏗️ Cấu trúc dự án hiện tại
 

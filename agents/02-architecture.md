@@ -12,24 +12,24 @@
 
 ```text
 src/
-├── App.tsx                    ← Root component: state chính + routing bằng tab
-├── main.tsx                   ← Entry point
+├── App.tsx                    ← Shell: auth/session + UI state; views nhận data từ data layer
+├── main.tsx                   ← Entry point (StrictMode + ErrorBoundary)
 ├── index.css                  ← Tailwind v4 + @theme tokens + theme-light overrides
 ├── types.ts                   ← TOÀN BỘ domain types (nguồn sự thật)
 ├── data/
+│   ├── useDataStore.ts        ← DATA LAYER: state + CRUD + audit (nối backend chỉ sửa đây)
 │   └── mockData.ts            ← Data mẫu (users, tickets, inventory, departments, audit logs)
-└── components/                ← 18 view/components (mỗi view 1 file)
+├── hooks/                     ← useDataStore*, usePagedRows, useTrapFocus, usePrefersReducedMotion
+└── components/                ← Views code-split (React.lazy) + ErrorBoundary + Pagination…
 ```
 
 ## 3. State management
 
-- **Không dùng Redux/Zustand** — state được quản lý bằng React `useState` tập trung tại `App.tsx`:
-  - `tickets`, `inventory`, `departments`, `auditLogs` — data chính
-  - `currentUser`, `staffList` — RBAC
-  - `activeTab` — điều hướng
-  - `theme` (`'dark' | 'light'`) — persist `localStorage.getItem('app-theme')`
-- Các handler thống nhất: `handleCreateTicket`, `handleUpdateTicketStatus`, `handleVerifyE2E`, `handleAddInventoryItem`, `handleUpdateInventoryItem`, `handleAddDepartment`, `handleUpdateDepartment`, `handleLoginSuccess`, `handleSwitchUser`, `handleAddStaffProfile`, `handleUpdateStaffDepartments`.
-- **Mọi thao tác ghi đều phải ghi audit log** qua `addAuditLog()` (hàm trung tâm).
+- **Không dùng Redux/Zustand** — toàn bộ data nằm trong `src/data/useDataStore.ts` (React `useState`):
+  - `tickets`, `inventory`, `departments`, `auditLogs`, `staffList`, `currentUser` + CRUD (`addTicket`, `applyTicketStatus`, `verifyE2E`, `add/update department/inventory/staff`) + `addAuditLog`.
+  - `App.tsx` **mỏng**: chỉ giữ `theme` (persist `app-theme`), `activeTab`, auth/session, `selectedTicketId` (modal **derive** từ store — hết stale state), notification/toast.
+- **Khi nối backend**: chỉ sửa bên trong `useDataStore` (fetch API), API trả về giữ nguyên — App & views không đổi.
+- Mọi thao tác ghi đều có audit log (qua `addAuditLog` của store).
 
 ## 4. Quy tắc khi sửa cấu trúc
 

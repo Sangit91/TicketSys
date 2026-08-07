@@ -4,7 +4,7 @@
 
 ## 1. Kiến trúc dữ liệu hiện tại
 
-- Nguồn dữ liệu duy nhất: `src/data/mockData.ts` (khởi tạo state trong `App.tsx`).
+- Nguồn dữ liệu duy nhất: `src/data/mockData.ts` (khởi tạo state trong `src/data/useDataStore.ts`).
 - Domain types tập trung tại `src/types.ts`:
   - `Ticket` — sự cố yêu cầu xử lý (có field ký số E2E: `e2eVerified`, `userSignature`, `itSignature`, `verificationMethod`, `signedFile*`)
   - `InventoryItem` + `AssetHistoryEvent` — thiết bị/tài sản + lịch sử vận hành
