@@ -73,6 +73,23 @@ src/
 - [ ] (Tùy chọn) Thêm tests / Docker khi mở rộng.
 - Phase hiện tại: **PHASE 3 — Production hardening** (xem memory/phase-history.md).
 
+## 🧠 Quản lý state — Kiến trúc + plan (PHASE A triển khai, Phase B/C chờ backend)
+
+### Mô hình 3 lớp
+1. **Session & Permission** → `src/state/sessionStore.ts` (**Zustand + persist**) — `currentUser`, `isLoggedIn`, `login/logout/switchUser`, `updateAssignedDepartments`. Không nhân bản session trong data layer.
+2. **Server data** → `src/data/useDataStore.ts` (**adapter duy nhất**) — tickets/inventory/departments/staffList/auditLogs + CRUD + audit. Đọc actor từ sessionStore (`useSessionStore.getState()`).
+3. **UI ephemeral** → `useState` local trong App/component — `activeTab`, drawer, `selectedTicketId` (derive từ store), filter, trang.
+
+### Quyết định đã chốt
+- Không dùng Redux. Chọn **Zustand (session/UI) + TanStack Query (server data, khi có backend)**.
+- `useDataStore` giữ vai trò **seam 1-chỗ**: nối backend chỉ sửa trong file này (hoặc đổi sang adapter Query) — App & views không đổi.
+
+### Phase còn lại (khi có backend)
+- **B1** TanStack QueryProvider + query tickets/inventory/departments/audit.
+- **B2** `useDataStore` → adapter: mock (dev) / Query (prod) qua cờ `VITE_USE_MOCK`.
+- **B3:** mutation **optimistic update** + `invalidateQueries(['tickets'])`.
+- **C1:** cache off (IndexedDB) optional; **C3:** staleTime/selector tối ưu re-render.
+
 ## 📌 Ghi chú quan trọng
 
 1. `template-du-an-web-moi.md` là chuẩn kiến trúc AI Agents Ready — đã áp dụng khi tạo AGENTS.md + agents/ + memory/.

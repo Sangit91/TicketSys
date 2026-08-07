@@ -23,13 +23,16 @@ src/
 └── components/                ← Views code-split (React.lazy) + ErrorBoundary + Pagination…
 ```
 
-## 3. State management
+## 3. State management — 3 lớp tách rõ
 
-- **Không dùng Redux/Zustand** — toàn bộ data nằm trong `src/data/useDataStore.ts` (React `useState`):
-  - `tickets`, `inventory`, `departments`, `auditLogs`, `staffList`, `currentUser` + CRUD (`addTicket`, `applyTicketStatus`, `verifyE2E`, `add/update department/inventory/staff`) + `addAuditLog`.
-  - `App.tsx` **mỏng**: chỉ giữ `theme` (persist `app-theme`), `activeTab`, auth/session, `selectedTicketId` (modal **derive** từ store — hết stale state), notification/toast.
-- **Khi nối backend**: chỉ sửa bên trong `useDataStore` (fetch API), API trả về giữ nguyên — App & views không đổi.
+1. **Session & Permission** → `src/state/sessionStore.ts` (**Zustand + persist** `ticketsys-session`): `currentUser`, `isLoggedIn`, `login/logout/switchUser`, `updateAssignedDepartments`. App dùng `useSessionStore`, không nhân bản session.
+2. **Server data** → `src/data/useDataStore.ts` (**adapter duy nhất**, React `useState`): `tickets`, `inventory`, `departments`, `staffList`, `auditLogs` + CRUD (`addTicket`, `applyTicketStatus`, `verifyE2E`, `add/update department/inventory/staff`) + `addAuditLog`. Actor đọc từ `useSessionStore.getState()`.
+3. **UI ephemeral** → `useState` local trong App/component: `activeTab`, drawer, `selectedTicketId` (modal **derive** từ store — hết stale state), filter, trang, form.
+
+- `App.tsx` **mỏng**: theme (persist `app-theme`), `activeTab`, routing, notification/toast.
+- **Khi nối backend**: chỉ sửa bên trong `useDataStore` (hoặc đổi sang adapter TanStack Query), App & views không đổi.
 - Mọi thao tác ghi đều có audit log (qua `addAuditLog` của store).
+- Plan mở rộng (PHASE B/C): TanStack Query cho server data, optimistic update, cờ `VITE_USE_MOCK`.
 
 ## 4. Quy tắc khi sửa cấu trúc
 

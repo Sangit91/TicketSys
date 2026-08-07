@@ -35,6 +35,11 @@
 - Thay `THREE.Clock` → `THREE.Timer` trong `ParticleBackground.tsx` (hết cảnh báo deprecation).
 - **Persist session login**: `isLoggedIn` + `currentUser` lưu `localStorage` (`app-logged-in`, `app-user`) — khôi phục khi App remount/reload → hết tình trạng "đăng nhập 1 lúc lại log out".
 
+### Quản lý state — Phase A (SessionStore Zustand)
+- Cài `zustand`. Tạo `src/state/sessionStore.ts`: `currentUser`, `isLoggedIn`, `login/logout/switchUser`, `updateAssignedDepartments` (persist `ticketsys-session`).
+- `useDataStore` bỏ `currentUser`/`setCurrentUser` → đọc actor từ `useSessionStore.getState()`. App dùng `useSessionStore` (bỏ manual `isLoggedIn`/`setCurrentUser`).
+- `useDataStore` = **adapter data duy nhất**, giữ để nối backend (Phase B/C: TanStack Query, mooted khi có server).
+
 ## PHASE 2 — Hoàn thiện UI nền tảng ([2026-08-06])
 
 ### Sửa bug + type-safety (6 bug P0)

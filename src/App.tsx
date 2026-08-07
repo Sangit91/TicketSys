@@ -47,6 +47,7 @@ const AdminRoleView = lazy(() => import('./components/AdminRoleView').then((m) =
 const AuditLogsView = lazy(() => import('./components/AuditLogsView').then((m) => ({ default: m.AuditLogsView })));
 
 import { useDataStore } from './data/useDataStore';
+import { useSessionStore } from './state/sessionStore';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 import {
   Ticket,
@@ -60,10 +61,9 @@ import {
 
 export default function App() {
   const store = useDataStore();
-  const { tickets, inventory, departments, staffList, auditLogs, currentUser, setCurrentUser } = store;
-  const [isLoggedIn, setIsLoggedInState] = useState<boolean>(
-    () => typeof window !== 'undefined' && !!window.localStorage.getItem('app-logged-in')
-  );
+  const { tickets, inventory, departments, staffList, auditLogs } = store;
+  const session = useSessionStore();
+  const { currentUser, isLoggedIn } = session;
   const [activeTab, setActiveTab] = useState<TabType>('TỔNG QUAN');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
@@ -100,27 +100,14 @@ export default function App() {
     }, 5000);
   };
 
-  // Persist phiên đăng nhập (chống mất session khi App remount/reload)
-  const updateLoggedIn = (v: boolean) => {
-    setIsLoggedInState(v);
-    if (typeof window !== 'undefined') {
-      if (v) {
-        window.localStorage.setItem('app-logged-in', '1');
-      } else {
-        window.localStorage.removeItem('app-logged-in');
-        window.localStorage.removeItem('app-user');
-      }
-    }
-  };
-
+  // Persist phiên đăng nhập — đã nằm trong sessionStore (zustand persist)
   // selectedTicket derive từ store (1 nguồn sự thật — hết stale state)
   const selectedTicket: Ticket | null = selectedTicketId
     ? store.tickets.find((t) => t.id === selectedTicketId) ?? null
     : null;
 
   const handleLoginSuccess = (user: TechnicalStaffProfile) => {
-    setCurrentUser(user);
-    updateLoggedIn(true);
+    session.login(user);
 
     const perm = ROLE_PERMISSIONS[user.roleType] || ROLE_PERMISSIONS['ADMIN'];
     if (!perm.allowedTabs.includes(activeTab)) {
@@ -143,7 +130,7 @@ export default function App() {
     const targetStaff = staffList.find((s) => s.id === staffId);
     if (!targetStaff) return;
 
-    setCurrentUser(targetStaff);
+    session.switchUser(targetStaff);
     const perm = ROLE_PERMISSIONS[targetStaff.roleType] || ROLE_PERMISSIONS['ADMIN'];
     if (!perm.allowedTabs.includes(activeTab)) {
       setActiveTab(perm.allowedTabs[0]);
@@ -271,7 +258,7 @@ export default function App() {
         currentUser={currentUser}
         staffList={staffList}
         onSwitchUser={handleSwitchUser}
-        onLogout={() => updateLoggedIn(false)}
+        onLogout={() => session.logout()}
         theme={theme}
         onToggleTheme={toggleTheme}
       />

@@ -9,6 +9,7 @@ import {
 } from '../types';
 import { INITIAL_TICKETS, INITIAL_INVENTORY, DEPARTMENTS_DATA, TECHNICAL_STAFF_USERS, INITIAL_AUDIT_LOGS } from './mockData';
 import { generateId, fakeSha256 } from '../utils';
+import { useSessionStore } from '../state/sessionStore';
 
 export interface E2EFileInfo {
   name: string;
@@ -31,18 +32,8 @@ export function useDataStore() {
   const [staffList, setStaffList] = useState<TechnicalStaffProfile[]>(TECHNICAL_STAFF_USERS);
   const [auditLogs, setAuditLogs] = useState<SystemAuditLog[]>(INITIAL_AUDIT_LOGS);
 
-  // Session khôi phục: nếu có id user lưu trước đó (localStorage), giữ nguyên người dùng
-  const storedUserId = typeof window !== 'undefined' ? window.localStorage.getItem('app-user') : null;
-  const [currentUser, setCurrentUserState] = useState<TechnicalStaffProfile>(
-    () =>
-      (storedUserId && TECHNICAL_STAFF_USERS.find((s) => s.id === storedUserId)) ||
-      TECHNICAL_STAFF_USERS[0]
-  );
-
-  const setCurrentUser = (user: TechnicalStaffProfile) => {
-    setCurrentUserState(user);
-    if (typeof window !== 'undefined') window.localStorage.setItem('app-user', user.id);
-  };
+  // Actor hiện tại cho audit log — đọc trực tiếp từ Session Store (không nhân bản session trong data layer)
+  const actor = () => useSessionStore.getState().currentUser;
 
   const addAuditLog = (logData: Omit<SystemAuditLog, 'id' | 'timestamp'>) => {
     const newLog: SystemAuditLog = {
@@ -89,9 +80,9 @@ export function useDataStore() {
       level: newStatus === 'ĐÃ HOÀN THÀNH' ? 'SUCCESS' : 'INFO',
       category: 'TICKETS',
       action: 'UPDATE_TICKET_STATUS',
-      details: `Cập nhật trạng thái sự cố [${ticketId}] sang "${newStatus}". Phụ trách: ${engineer || actorName || currentUser.name}. Ghi chú: ${notes || 'N/A'}`,
-      actorName: actorName || currentUser.name,
-      actorRole: actorRole || currentUser.role,
+      details: `Cập nhật trạng thái sự cố [${ticketId}] sang "${newStatus}". Phụ trách: ${engineer || actorName || actor().name}. Ghi chú: ${notes || 'N/A'}`,
+      actorName: actorName || actor().name,
+      actorRole: actorRole || actor().role,
       targetId: ticketId,
       sha256Hash: fakeSha256(),
     });
@@ -133,8 +124,8 @@ export function useDataStore() {
       category: 'KÝ SỐ',
       action: verificationMethod === 'FILE_UPLOAD' ? 'UPLOAD_SIGNATURE_DOC' : 'VERIFY_E2E_SMARTCA_CODE',
       details,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
+      actorName: actor().name,
+      actorRole: actor().role,
       targetId: ticketId,
       signedFileName: fileInfo?.name,
       signedFilePreview: fileInfo?.url,
@@ -149,8 +140,8 @@ export function useDataStore() {
       category: 'DEPARTMENTS',
       action: 'ADD_DEPARTMENT',
       details: `Khởi tạo thông tin Khoa / Phòng mới: ${newDept.name} (${newDept.code}). Leader: ${newDept.lead}`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
+      actorName: actor().name,
+      actorRole: actor().role,
       targetId: newDept.id,
       sha256Hash: fakeSha256(),
     });
@@ -163,8 +154,8 @@ export function useDataStore() {
       category: 'DEPARTMENTS',
       action: 'UPDATE_DEPARTMENT',
       details: `Cập nhật cấu hình Khoa / Phòng: ${updatedDept.name}. Băng thông: ${updatedDept.networkBandwidthGbps} Gbps.`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
+      actorName: actor().name,
+      actorRole: actor().role,
       targetId: updatedDept.id,
       sha256Hash: fakeSha256(),
     });
@@ -177,8 +168,8 @@ export function useDataStore() {
       category: 'INVENTORY',
       action: 'ADD_INVENTORY_ASSET',
       details: `Nhập kho thiết bị / mực in y tế mới: ${newItem.name} [Mã QR: ${newItem.qrCodeUrl}]`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
+      actorName: actor().name,
+      actorRole: actor().role,
       targetId: newItem.id,
       sha256Hash: fakeSha256(),
     });
@@ -191,8 +182,8 @@ export function useDataStore() {
       category: 'INVENTORY',
       action: 'UPDATE_ASSET_LOG',
       details: `Cập nhật hồ sơ vận hành thiết bị ${updatedItem.name} (${updatedItem.id}). Vị trí: ${updatedItem.location}`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
+      actorName: actor().name,
+      actorRole: actor().role,
       targetId: updatedItem.id,
       sha256Hash: fakeSha256(),
     });
@@ -205,8 +196,8 @@ export function useDataStore() {
       category: 'RBAC',
       action: 'ADD_STAFF_PROFILE',
       details: `Khởi tạo hồ sơ nhân sự kĩ thuật viên mới: ${newStaff.name} - Chuyên môn: ${newStaff.specialty}`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
+      actorName: actor().name,
+      actorRole: actor().role,
       targetId: newStaff.id,
       sha256Hash: fakeSha256(),
     });
@@ -216,16 +207,16 @@ export function useDataStore() {
     setStaffList((prev) =>
       prev.map((s) => (s.id === staffId ? { ...s, assignedDepartmentIds: departmentIds } : s))
     );
-    if (currentUser.id === staffId) {
-      setCurrentUserState((prev) => ({ ...prev, assignedDepartmentIds: departmentIds }));
+    if (actor().id === staffId) {
+      useSessionStore.getState().updateAssignedDepartments(departmentIds);
     }
     addAuditLog({
       level: 'SECURITY',
       category: 'RBAC',
       action: 'UPDATE_STAFF_DEPARTMENTS',
       details: `Thay đổi danh sách khoa phòng được giao phụ trách cho kĩ thuật viên ID [${staffId}].`,
-      actorName: currentUser.name,
-      actorRole: currentUser.role,
+      actorName: actor().name,
+      actorRole: actor().role,
       targetId: staffId,
       sha256Hash: fakeSha256(),
     });
@@ -237,8 +228,6 @@ export function useDataStore() {
     departments,
     staffList,
     auditLogs,
-    currentUser,
-    setCurrentUser,
     addAuditLog,
     addTicket,
     updateTicketStatus,
