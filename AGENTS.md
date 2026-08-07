@@ -31,6 +31,7 @@
 - **State/CRUD tập trung** `src/data/useDataStore.ts` — nối backend chỉ sửa file này, App/views không đổi.
 - Bundle **code-split** 7 view (`React.lazy`) + `ErrorBoundary` + `LoadingSkeleton`; bảng **phân trang** (`usePagedRows`); design tokens `@theme`; `prefers-reduced-motion` (a11y).
 - Bắt buộc Quality Gate: `npm run lint && npm run build` (xem 07).
+- **Backend/DB (thiết kế đã chốt, chờ build):** doc `docs/architecture-backend-db.md` (schema + quan hệ + bảo mật + backup) & `docs/api-plan.md` (REST) — đã hấp thu checklist. Trước khi code backend, đọc 2 file này + `agents/06`.
 
 ## 📌 Ghi chú tách file
 

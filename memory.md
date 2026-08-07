@@ -62,12 +62,15 @@ src/
 | Performance PHASE 3 | ✅ Code-split 7 view + Lazy + Suspense + ErrorBoundary + LoadingSkeleton; `@types/react` đã cài |
 | Thu gọn UI PHASE 3 | ✅ Hero chỉ ở TỔNG QUAN; ParticleBackground/HeroGraphic lazy + render ở login & TỔNG QUAN (cắt bundle chính 1MB→479kB) |
 | Phân trang bảng PHASE 3 | ✅ `usePagedRows` + `Pagination` cho Tickets (8/trang), Inventory (9), AuditLogs (10); auto reset về trang 1 khi lọc |
-| Backend / gemini AI | ⏳ Chưa (không backend; gemini chưa dùng) |
-| Tests / Docker | ⏳ Chưa có |
+| Backend / DB | 📐 **Đã có thiết kế chốt** — `docs/architecture-backend-db.md` (schema + quan hệ + bảo mật + backup) + `docs/api-plan.md` (REST); đã hấp thu `TicketSys_Architecture_Improvement_Checklist`. Chưa code. |
+| Gemini AI | ⏳ Chưa (chưa dùng `@google/genai`) |
+| Tests / Docker | ⏳ Chưa có (kế hoạch trong docs) |
 
 ## 🔎 Audit / Pending Tasks
 
-- [ ] Dashboard: SLA metrics còn hardcode (1.8ms, 99.98%...) — nối với `SystemMetric`/mock khi có dữ liệu động.
+- [ ] **Backend build (kế tiếp):** Prisma schema (theo docs 3.2 + workflow 3.5) → NestJS modules (Auth/Users/Dept/Tickets/Assets/Audit) → seed/migration → MinIO → logging.
+- [ ] **Khâu chờ backend:** chốt PostgreSQL?/NestJS?/đích deploy (VPS vs cloud)?/file MinIO vs DB BLOB (đã ghi trong `docs/architecture-backend-db.md` Phần 7).
+- [ ] Dashboard: SLA metrics còn hardcode (1.8ms, 99.98%...) — nối `SystemMetric`/API khi backend.
 - [ ] Design tokens: còn ~153 hex `[#...]` phụ (panel #1A1A1A, #12131F, #1A1D2E...) chưa token hóa — được generic light selector cover.
 - [ ] Quyết định dùng thực tế `@google/genai` (Gemini) khi có yêu cầu AI.
 - [ ] (Tùy chọn) Thêm tests / Docker khi mở rộng.
@@ -95,3 +98,4 @@ src/
 1. `template-du-an-web-moi.md` là chuẩn kiến trúc AI Agents Ready — đã áp dụng khi tạo AGENTS.md + agents/ + memory/.
 2. Dữ liệu trong mockData **chỉ dùng synthetic** — cấm PHI thật.
 3. Đã xóa toàn bộ `any` (PHASE 2); `src/utils.ts` là nơi tập trung helper ID/hash.
+4. Tài liệu kiến trúc backend/DB & mối quan hệ: `docs/architecture-backend-db.md` + `docs/api-plan.md` (đã hấp thu checklist improvement).

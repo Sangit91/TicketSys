@@ -40,6 +40,12 @@
 - `useDataStore` bỏ `currentUser`/`setCurrentUser` → đọc actor từ `useSessionStore.getState()`. App dùng `useSessionStore` (bỏ manual `isLoggedIn`/`setCurrentUser`).
 - `useDataStore` = **adapter data duy nhất**, giữ để nối backend (Phase B/C: TanStack Query, mooted khi có server).
 
+### Thiết kế backend/DB + hấp thu Checklist improvement
+- Phân tích `docs/TicketSys_Architecture_Improvement_Checklist.md` → hoàn toàn khớp kiến trúc đề xuất (Modular Monolith, React+Zustand+Query+useDataStore, NestJS+Prisma+Postgres+MinIO, Docker+WAL). Không dùng Microservice/Kafka/K8s...
+- Cập nhật `docs/architecture-backend-db.md`: thêm `sla_policies`, `ticket_attachments`, `ticket_comments`, `notifications`, `consumables`; asset metadata (manufacturer/model/cpuModel/ramGb/diskGb/os); workflow chuẩn hoá (EN enum ↔ VN label, backend-controlled); dept summary tính SQL; soft delete; QR runtime.
+- Tạo `docs/api-plan.md`: REST endpoints (Auth/Users/Dept/Tickets/E2E/Assets/Consumables/Audit/Notification/Dashboard) + RBAC + pagination + upload MinIO + lộ trình 6 bước.
+- `AGENTS.md` + `memory.md` cập nhật pointer + pending (Prisma schema, khâu chờ chốt stack/deploy).
+
 ## PHASE 2 — Hoàn thiện UI nền tảng ([2026-08-06])
 
 ### Sửa bug + type-safety (6 bug P0)
