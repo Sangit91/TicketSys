@@ -147,7 +147,7 @@ export interface Ticket {
 }
 
 export type AuditLogLevel = 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR' | 'SECURITY' | 'KÝ SỐ';
-export type AuditLogCategory = 'TICKETS' | 'INVENTORY' | 'TOPOLOGY' | 'DEPARTMENTS' | 'RBAC' | 'KÝ SỐ' | 'HEALTHTEST' | 'SYSTEM';
+export type AuditLogCategory = 'TICKETS' | 'INVENTORY' | 'TOPOLOGY' | 'DEPARTMENTS' | 'RBAC' | 'KÝ SỐ' | 'HEALTHTEST' | 'SYSTEM' | 'SECURITY';
 
 export interface SystemAuditLog {
   id: string;

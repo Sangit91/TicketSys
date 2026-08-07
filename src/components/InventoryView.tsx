@@ -397,8 +397,8 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
       {/* Grid of Hardware & Ink Supplies */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => {
-          const isCritical = item.health === 'NGUY CẤP' || item.health === 'CRITICAL';
-          const isDegraded = item.health === 'SUY GIẢM' || item.health === 'DEGRADED';
+          const isCritical = item.health === 'NGUY CẤP';
+          const isDegraded = item.health === 'SUY GIẢM';
           const isPrinter = item.type === 'Máy In Y Tế & Mực In' || item.isPrinterSupply;
 
           return (

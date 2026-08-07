@@ -2,6 +2,16 @@
 
 > Append-only log. Số phase mới: lấy max + 1 (xem agents/08-memory-management.md).
 
+## PHASE 3 — Production hardening (tải nhanh + chống lỗi + type chặt) ([2026-08-06])
+
+### Code-split views + ErrorBoundary + Skeleton
+- Thêm `@types/react@^19` + `@types/react-dom@^19` (trước đó react hoàn toàn KHÔNG có type declaration) → đây là bước "lộ" ~22 lỗi typing thật bị ẩn, đã fix.
+- Lazy-load 7 view theo tab (`React.lazy` + Suspense): DashboardView, TicketsView, InventoryView, AssetFlowMap, DepartmentsView, AdminRoleView, AuditLogsView → build tách chunk riêng (InventoryView 58kB, AssetFlowMap 39kB, còn lại 12-19kB).
+- Tạo `ErrorBoundary` (class component, fallback UI + nút Tải lại): bọc cấp cao nhất (main.tsx) + quanh vùng tab.
+- Tạo `LoadingSkeleton` (cards + table shimmer, dark/light).
+- Fix 22 lỗi typing bị lộ: mockData `: SystemAuditLog[]`; bỏ so sánh status/health bằng literal Anh chết (RESOLVED/CLOSED/IN_PROGRESS/CRITICAL/DEGRADED); cast `node.data` qua `unknown`; bỏ prop `opacity` không tồn tại trên `<Background>` (2 file); thêm `'SECURITY'` vào `AuditLogCategory`; type `Variants` cho TypewriterText; cast `priority`; cloneElement ReactElement.
+- Backup trước: commit git.
+
 ## PHASE 2 — Hoàn thiện UI nền tảng ([2026-08-06])
 
 ### Sửa bug + type-safety (6 bug P0)

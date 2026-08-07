@@ -57,16 +57,21 @@ src/
 | Ký số E2E (DIGITAL_CODE / FILE_UPLOAD) | ✅ |
 | A11y (focus trap / aria) | ✅ Mọi modal + aria-label |
 | Design tokens (@theme) | ✅ Token hóa brand colors (acid-lime, line-energy, neon-red, neon-cyan, alert-amber, surfaces) |
+| Performance PHASE 3 | ✅ Code-split 7 view + Lazy + Suspense + ErrorBoundary + LoadingSkeleton; `@types/react` đã cài |
 | Backend / gemini AI | ⏳ Chưa (không backend; gemini chưa dùng) |
 | Tests / Docker | ⏳ Chưa có |
 
 ## 🔎 Audit / Pending Tasks
 
+- [ ] **Virtual list / phân trang bảng** — bảng Tickets/Inventory render toàn bộ `.map()`; với 1000 users cần phân trang/virtual.
+- [ ] **Thu gọn hero + bỏ ParticleBackground ở tab dữ liệu** — giảm tải nhận thức + GPU (đề xuất mục "rút gọn UI" đang bỏ dở).
+- [ ] **Data-access layer** — tách `useState(mock)` ra 1 lớp để nối backend.
+- [ ] **prefers-reduced-motion** — tắt hiệu ứng chuyển động theo hệ thống.
 - [ ] Dashboard: SLA metrics còn hardcode (1.8ms, 99.98%...) — nối với `SystemMetric`/mock khi có dữ liệu động.
-- [ ] Design tokens: còn ~153 hex `[#...]` phụ (panel #1A1A1A, #12131F, #1A1D2E...) chưa token hóa — được generic light selector cover, token hóa tiếp nếu cần.
+- [ ] Design tokens: còn ~153 hex `[#...]` phụ (panel #1A1A1A, #12131F, #1A1D2E...) chưa token hóa — được generic light selector cover.
 - [ ] Quyết định dùng thực tế `@google/genai` (Gemini) khi có yêu cầu AI.
 - [ ] (Tùy chọn) Thêm tests / Docker khi mở rộng.
-- Phase hiện tại: **PHASE 2 — Hoàn thiện UI nền tảng** (xem memory/phase-history.md).
+- Phase hiện tại: **PHASE 3 — Production hardening** (xem memory/phase-history.md).
 
 ## 📌 Ghi chú quan trọng
 

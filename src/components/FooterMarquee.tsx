@@ -135,7 +135,7 @@ export const FooterMarquee: React.FC<FooterMarqueeProps> = ({ theme = 'dark' }) 
               />
             </span>
 
-            {React.cloneElement(item.icon as React.ReactElement, {
+            {React.cloneElement(item.icon as React.ReactElement<{ className?: string }>, {
               className: `w-3.5 h-3.5 ${
                 isLight
                   ? item.statusColor === 'lime'

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ParticleBackground } from './components/ParticleBackground';
 import { HeroGraphic } from './components/HeroGraphic';
@@ -7,16 +7,20 @@ import { FooterMarquee } from './components/FooterMarquee';
 import { ActionDrawer } from './components/ActionDrawer';
 import { ScrambleText } from './components/ScrambleText';
 import { TypewriterText } from './components/TypewriterText';
-import { TicketsView } from './components/TicketsView';
-import { DashboardView } from './components/DashboardView';
-import { InventoryView } from './components/InventoryView';
-import { AssetFlowMap } from './components/AssetFlowMap';
-import { DepartmentsView } from './components/DepartmentsView';
-import { AdminRoleView } from './components/AdminRoleView';
 import { TicketDetailModal } from './components/TicketDetailModal';
-import { AuditLogsView } from './components/AuditLogsView';
 import { NotificationBanner } from './components/NotificationBanner';
 import { LoginPage } from './components/LoginPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
+
+// Code-split per-tab views (chunk riêng, chỉ tải khi tab được mở)
+const DashboardView = lazy(() => import('./components/DashboardView').then((m) => ({ default: m.DashboardView })));
+const TicketsView = lazy(() => import('./components/TicketsView').then((m) => ({ default: m.TicketsView })));
+const InventoryView = lazy(() => import('./components/InventoryView').then((m) => ({ default: m.InventoryView })));
+const AssetFlowMap = lazy(() => import('./components/AssetFlowMap').then((m) => ({ default: m.AssetFlowMap })));
+const DepartmentsView = lazy(() => import('./components/DepartmentsView').then((m) => ({ default: m.DepartmentsView })));
+const AdminRoleView = lazy(() => import('./components/AdminRoleView').then((m) => ({ default: m.AdminRoleView })));
+const AuditLogsView = lazy(() => import('./components/AuditLogsView').then((m) => ({ default: m.AuditLogsView })));
 import {
   INITIAL_TICKETS,
   INITIAL_INVENTORY,
@@ -522,14 +526,16 @@ export default function App() {
 
         {/* Tab Selection Area */}
         <div className="w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 12, scale: 0.99 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.99 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            >
+          <Suspense fallback={<LoadingSkeleton />}>
+            <ErrorBoundary>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 12, scale: 0.99 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.99 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                >
               {(activeTab === 'TỔNG QUAN' || (activeTab as string) === 'DASHBOARD') && (
                 <DashboardView
                   tickets={tickets}
@@ -603,7 +609,9 @@ export default function App() {
                 />
               )}
             </motion.div>
-          </AnimatePresence>
+              </AnimatePresence>
+            </ErrorBoundary>
+          </Suspense>
         </div>
       </main>
 

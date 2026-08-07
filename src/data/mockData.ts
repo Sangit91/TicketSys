@@ -1,4 +1,4 @@
-import { Ticket, InventoryItem, DepartmentSummary, SystemMetric, TechnicalStaffProfile } from '../types';
+import { Ticket, InventoryItem, DepartmentSummary, SystemMetric, TechnicalStaffProfile, SystemAuditLog } from '../types';
 
 export const TECHNICAL_STAFF_USERS: TechnicalStaffProfile[] = [
   {
@@ -597,7 +597,7 @@ export const CURRENT_TELEMETRY: SystemMetric = {
   slaCompliancePercent: 99.98,
 };
 
-export const INITIAL_AUDIT_LOGS = [
+export const INITIAL_AUDIT_LOGS: SystemAuditLog[] = [
   {
     id: 'LOG-2026-9081',
     timestamp: '2026-08-04T18:35:10Z',

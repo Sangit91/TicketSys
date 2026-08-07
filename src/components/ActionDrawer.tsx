@@ -120,7 +120,7 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = ({
       departmentName: selectedDept?.name || 'Khoa Khám Bệnh & Cấp Cứu',
       assetQrCode: assetQrCode || `QR-TB-${Math.floor(Math.random() * 90000)}`,
       category,
-      priority,
+priority: priority as Ticket['priority'],
       status: 'MỚI',
       description,
       requiresE2EVerification,

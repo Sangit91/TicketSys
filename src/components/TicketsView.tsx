@@ -44,9 +44,9 @@ export const TicketsView: React.FC<TicketsViewProps> = ({
   });
 
   const criticalCount = tickets.filter((t) => t.priority.includes('KHẨN CẤP') || t.priority.includes('CRITICAL')).filter(t => t.status !== 'ĐÃ HOÀN THÀNH' && t.status !== 'ĐÃ ĐÓNG').length;
-  const inProgressCount = tickets.filter((t) => t.status === 'ĐANG XỬ LÝ' || t.status === 'IN_PROGRESS').length;
-  const pendingVerifyCount = tickets.filter((t) => t.status === 'CHỜ KÝ XÁC NHẬN' || t.status === 'PENDING_VERIFICATION' || (t.requiresE2EVerification && !t.e2eVerified)).length;
-  const resolvedCount = tickets.filter((t) => t.status === 'ĐÃ HOÀN THÀNH' || t.status === 'RESOLVED' || t.status === 'ĐÃ ĐÓNG' || t.status === 'CLOSED').length;
+  const inProgressCount = tickets.filter((t) => t.status === 'ĐANG XỬ LÝ').length;
+  const pendingVerifyCount = tickets.filter((t) => t.status === 'CHỜ KÝ XÁC NHẬN' || (t.requiresE2EVerification && !t.e2eVerified)).length;
+  const resolvedCount = tickets.filter((t) => t.status === 'ĐÃ HOÀN THÀNH' || t.status === 'ĐÃ ĐÓNG').length;
 
   return (
     <div className="w-full space-y-6">
@@ -290,9 +290,9 @@ export const TicketsView: React.FC<TicketsViewProps> = ({
                       <td className="py-2.5 px-2 sm:px-3 whitespace-nowrap">
                         <span
                           className={`inline-block px-2 py-0.5 rounded font-bold text-[9px] sm:text-[10px] tracking-wider uppercase ${
-                            ticket.status === 'ĐÃ HOÀN THÀNH' || ticket.status === 'RESOLVED' || ticket.status === 'ĐÃ ĐÓNG' || ticket.status === 'CLOSED'
+                            ticket.status === 'ĐÃ HOÀN THÀNH' || ticket.status === 'ĐÃ ĐÓNG'
                               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                              : ticket.status === 'ĐANG XỬ LÝ' || ticket.status === 'IN_PROGRESS'
+                              : ticket.status === 'ĐANG XỬ LÝ'
                               ? 'bg-line-energy/20 text-line-energy border border-line-energy/30'
                               : 'bg-acid-lime/20 text-acid-lime border border-acid-lime/30'
                           }`}

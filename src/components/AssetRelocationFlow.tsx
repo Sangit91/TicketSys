@@ -258,7 +258,7 @@ export const AssetRelocationFlow: React.FC<AssetRelocationFlowProps> = ({ item }
           style={{ background: '#030014' }}
         >
           <Controls className="bg-surface border border-acid-lime/40 text-acid-lime rounded-xl" />
-          <Background color="#CCFF00" opacity={0.1} variant={BackgroundVariant.Dots} />
+          <Background color="#CCFF00" variant={BackgroundVariant.Dots} />
         </ReactFlow>
 
         <div className="absolute bottom-2 right-3 z-10 text-[10px] text-white/60 bg-black/80 px-2.5 py-1 rounded-lg border border-white/10">

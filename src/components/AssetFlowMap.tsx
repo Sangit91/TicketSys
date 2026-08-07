@@ -141,6 +141,9 @@ interface NetworkNodeData {
   bgColor?: string;
 }
 
+const nodeData = (node: Node | undefined): NetworkNodeData | undefined =>
+  node ? (node.data as unknown as NetworkNodeData) : undefined;
+
 const CustomNetworkNode = ({ data, selected }: { data: NetworkNodeData; selected: boolean }) => {
   const isLight = document.querySelector('[data-theme="light"]') !== null || document.body.classList.contains('theme-light');
 
@@ -569,7 +572,7 @@ export const AssetFlowMap: React.FC<AssetFlowMapProps> = ({ theme = 'dark' }) =>
     setEditNodeThroughput(current.throughput || '');
     setEditNodePackets(current.packetsPerSec || '1,000,000 pps');
     setEditNodeStatus(current.status || 'ONLINE');
-    setEditNodeColor(current.color || currentNode?.data?.borderColor || '#00F0FF');
+    setEditNodeColor(current.color || nodeData(currentNode)?.borderColor || '#00F0FF');
     setEditNodeDesc(current.description || '');
     setShowEditNodeModal(true);
   };
@@ -747,7 +750,6 @@ export const AssetFlowMap: React.FC<AssetFlowMapProps> = ({ theme = 'dark' }) =>
             <Controls />
             <Background
               color={isLight ? '#94A3B8' : '#88AAFF'}
-              opacity={isLight ? 0.35 : 0.15}
               variant={BackgroundVariant.Dots}
             />
           </ReactFlow>
@@ -1068,7 +1070,7 @@ export const AssetFlowMap: React.FC<AssetFlowMapProps> = ({ theme = 'dark' }) =>
                   >
                     {nodes.map((node) => (
                       <option key={node.id} value={node.id}>
-                        {node.data?.label || node.id}
+                        {nodeData(node)?.label || node.id}
                       </option>
                     ))}
                   </select>
@@ -1083,7 +1085,7 @@ export const AssetFlowMap: React.FC<AssetFlowMapProps> = ({ theme = 'dark' }) =>
                   >
                     {nodes.map((node) => (
                       <option key={node.id} value={node.id}>
-                        {node.data?.label || node.id}
+                        {nodeData(node)?.label || node.id}
                       </option>
                     ))}
                   </select>
@@ -1350,10 +1352,10 @@ export const AssetFlowMap: React.FC<AssetFlowMapProps> = ({ theme = 'dark' }) =>
               <p>Bạn có chắc chắn muốn xóa nút mạng này khỏi sơ đồ hạ tầng?</p>
               <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl space-y-1">
                 <div className="font-bold text-white text-sm">
-                  {nodeDetails[nodeToDelete]?.label || nodes.find((n) => n.id === nodeToDelete)?.data?.label || nodeToDelete}
+                  {nodeDetails[nodeToDelete]?.label || nodeData(nodes.find((n) => n.id === nodeToDelete))?.label || nodeToDelete}
                 </div>
                 <div className="text-red-300 font-mono text-[11px]">
-                  IP: {nodeDetails[nodeToDelete]?.ip || nodes.find((n) => n.id === nodeToDelete)?.data?.ip || '10.200.x.x'}
+                  IP: {nodeDetails[nodeToDelete]?.ip || nodeData(nodes.find((n) => n.id === nodeToDelete))?.ip || '10.200.x.x'}
                 </div>
               </div>
               <p className="text-white/60 text-[11px]">
