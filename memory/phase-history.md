@@ -26,6 +26,11 @@
 - App.tsx mỏng lại: chỉ giữ auth session (login/switch user, RBAC tab), selectedTicket derive từ store (bỏ snapshot stale), notification/toast. Các view nhận state qua props từ store.
 - Khi nối backend: chỉ sửa bên trong `useDataStore` (fetch API), API trả về giữ nguyên — App & views không đổi.
 
+### Reduced-motion + responsive
+- `src/hooks/usePrefersReducedMotion.ts`; tôn trọng hệ thống: bỏ ParticleBackground, freeze ScrambleText/TypewriterText.
+- CSS `@media (prefers-reduced-motion: reduce)` vô hiệu animation/transition toàn cục.
+- Responsive: bảng Tickets cuộn ngang (`overflow-x-auto` + `min-w-[720px]`); Header có sẵn desktop `hidden xl:flex` + sub-nav mobile `xl:hidden overflow-x-auto`.
+
 ## PHASE 2 — Hoàn thiện UI nền tảng ([2026-08-06])
 
 ### Sửa bug + type-safety (6 bug P0)

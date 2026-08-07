@@ -58,6 +58,7 @@ src/
 | A11y (focus trap / aria) | ✅ Mọi modal + aria-label |
 | Design tokens (@theme) | ✅ Token hóa brand colors (acid-lime, line-energy, neon-red, neon-cyan, alert-amber, surfaces) |
 | Data-access layer PHASE 3 | ✅ Tách sang `src/data/useDataStore.ts` (state + CRUD + audit); App mỏng — khi nối backend chỉ sửa hook này |
+| Reduced-motion + responsive PHASE 3 | ✅ `usePrefersReducedMotion` (tắt ParticleBackground/Scramble/Typewriter); CSS `@media reduce`; bảng Tickets cuộn ngang mobile (Header đã có sub-nav xl:hidden) |
 | Performance PHASE 3 | ✅ Code-split 7 view + Lazy + Suspense + ErrorBoundary + LoadingSkeleton; `@types/react` đã cài |
 | Thu gọn UI PHASE 3 | ✅ Hero chỉ ở TỔNG QUAN; ParticleBackground/HeroGraphic lazy + render ở login & TỔNG QUAN (cắt bundle chính 1MB→479kB) |
 | Phân trang bảng PHASE 3 | ✅ `usePagedRows` + `Pagination` cho Tickets (8/trang), Inventory (9), AuditLogs (10); auto reset về trang 1 khi lọc |
@@ -66,7 +67,6 @@ src/
 
 ## 🔎 Audit / Pending Tasks
 
-- [ ] **prefers-reduced-motion** — tắt hiệu ứng chuyển động theo hệ thống.
 - [ ] Dashboard: SLA metrics còn hardcode (1.8ms, 99.98%...) — nối với `SystemMetric`/mock khi có dữ liệu động.
 - [ ] Design tokens: còn ~153 hex `[#...]` phụ (panel #1A1A1A, #12131F, #1A1D2E...) chưa token hóa — được generic light selector cover.
 - [ ] Quyết định dùng thực tế `@google/genai` (Gemini) khi có yêu cầu AI.

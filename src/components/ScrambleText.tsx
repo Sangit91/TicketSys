@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 interface ScrambleTextProps {
   words: string[];
@@ -15,16 +16,19 @@ export const ScrambleText: React.FC<ScrambleTextProps> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayText, setDisplayText] = useState(words[0]);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
+    if (reducedMotion) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % words.length);
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [words, intervalMs]);
+  }, [words, intervalMs, reducedMotion]);
 
   useEffect(() => {
+    if (reducedMotion) return;
     const targetWord = words[currentIndex];
     let iteration = 0;
     const maxIterations = targetWord.length * 3;

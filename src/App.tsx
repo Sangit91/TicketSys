@@ -16,12 +16,15 @@ const ParticleBackground = lazy(() => import('./components/ParticleBackground').
 const HeroGraphic = lazy(() => import('./components/HeroGraphic').then((m) => ({ default: m.HeroGraphic })));
 
 // Bao nền trực quan khi cần hiển thị (login + TỔNG QUAN)
-const VisualBackdrop = ({ theme }: { theme: 'dark' | 'light' }) => (
-  <Suspense fallback={null}>
-    <ParticleBackground />
-    <HeroGraphic theme={theme} />
-  </Suspense>
-);
+const VisualBackdrop = ({ theme }: { theme: 'dark' | 'light' }) => {
+  const reducedMotion = usePrefersReducedMotion();
+  return (
+    <Suspense fallback={null}>
+      {!reducedMotion && <ParticleBackground />}
+      <HeroGraphic theme={theme} />
+    </Suspense>
+  );
+};
 
 // Tiêu đề gọn cho các tab dữ liệu (thay cho hero khổng lồ khi xem dữ liệu)
 const VIEW_META: Record<string, { title: string; sub: string }> = {
@@ -44,6 +47,7 @@ const AdminRoleView = lazy(() => import('./components/AdminRoleView').then((m) =
 const AuditLogsView = lazy(() => import('./components/AuditLogsView').then((m) => ({ default: m.AuditLogsView })));
 
 import { useDataStore } from './data/useDataStore';
+import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 import {
   Ticket,
   TicketStatus,

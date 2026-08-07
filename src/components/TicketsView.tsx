@@ -189,9 +189,9 @@ export const TicketsView: React.FC<TicketsViewProps> = ({
       </div>
 
       {/* Tickets List / Table */}
-      <div className="bg-panel/90 border border-white/10 rounded-xl overflow-hidden backdrop-blur-md shadow-xl">
+      <div className="bg-panel/90 border border-white/10 rounded-xl overflow-x-auto backdrop-blur-md shadow-xl">
         <div className="w-full">
-          <table className="w-full text-left border-collapse font-sans text-xs table-auto">
+          <table className="w-full text-left border-collapse font-sans text-xs table-auto min-w-[720px]">
             <thead>
               <tr className="bg-panel-deep text-white/60 border-b border-white/10 font-bold text-[10px] sm:text-[11px] tracking-wide uppercase">
                 <th className="py-3 px-2 sm:px-3 whitespace-nowrap">Mã Phiếu</th>

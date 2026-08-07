@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, type Variants } from 'motion/react';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 interface TypewriterTextProps {
   text: string;
@@ -8,6 +9,7 @@ interface TypewriterTextProps {
 
 export const TypewriterText: React.FC<TypewriterTextProps> = ({ text, className = '' }) => {
   const letters = Array.from(text);
+  const reducedMotion = usePrefersReducedMotion();
 
   const container: Variants = {
     hidden: { opacity: 0 },
@@ -36,7 +38,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({ text, className 
   return (
     <motion.div
       variants={container}
-      initial="hidden"
+      initial={reducedMotion ? false : 'hidden'}
       animate="visible"
       className={`inline-block ${className}`}
     >
